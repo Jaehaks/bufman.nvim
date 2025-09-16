@@ -197,10 +197,10 @@ local function set_win_opts(contents)
 	-- set window height / width to fit file contents
 	-- if <1, it means ratio of window width
 	-- if >1, it means count of columns and row
-	if width <= 1 then
+	if width < 1 then
 		width = math.floor(vim.o.columns * width)
 	end
-	if height <= 1 then
+	if height < 1 then
 		height = math.floor(vim.o.lines * height)
 	end
 
