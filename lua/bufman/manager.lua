@@ -141,15 +141,25 @@ local function update_icons()
 end
 
 -- get listed buffer list
-local function create_marks()
-	marks = {} -- initialize
+local function update_marks()
+	-- remove unused mark
+	local buf_in_marks = {}
+	for i = #marks, 1, -1 do
+		if not Utils.is_valid(marks[i].bufnr) then
+			table.remove(marks, i)
+		else
+			table.insert(buf_in_marks, marks[i].bufnr)
+		end
+	end
+
+	-- add additional buffers to marks
 	local buflist = vim.api.nvim_list_bufs()
 	local curbufnr = vim.api.nvim_get_current_buf() -- focused buffer
 	local altbufnr = vim.fn.bufnr('#')
 	local pwd = Utils.sep_unify(vim.fn.fnamemodify(vim.fn.getcwd(0), ':~'), nil, nil, true)
 	for _, bufnr in ipairs(buflist) do
 		local filepath = Utils.is_valid(bufnr)
-		if filepath then
+		if filepath and not vim.tbl_contains(buf_in_marks, bufnr) then
 			local dirpath = Utils.sep_unify(vim.fn.fnamemodify(filepath, ':~:h'), nil, nil, true)
 			local focused = bufnr == curbufnr and '%' or ' '
 			local altered = bufnr == altbufnr and '#' or ' '
@@ -303,7 +313,7 @@ end
 
 -- update marks from buffer manager contents
 ---@param bufnr number buffer id of buffer manager
-local function update_marks(bufnr)
+local function update_contents(bufnr)
 	local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 
 	-- create line hash to check line buffer is
@@ -326,7 +336,7 @@ local function update_marks(bufnr)
 	end
 
 	-- Refresh the marks
-	local ok = create_marks()
+	local ok = update_marks()
 	if not ok then return end
 	local contents = get_marklist(config.formatter)
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, contents)
@@ -339,7 +349,7 @@ local function toggle_edit(bufnr, winid)
 	state.edit_mode = not state.edit_mode
 	if not state.edit_mode then
 		vim.api.nvim_win_set_cursor(winid, {1, 0})
-		update_marks(bufnr)
+		update_contents(bufnr)
 	end
 	vim.api.nvim_set_option_value('modifiable', state.edit_mode, { buf = bufnr })
 	vim.api.nvim_set_option_value('cursorline', not state.edit_mode, { win = winid })
@@ -366,7 +376,7 @@ end
 ---@param winid number
 local function update_and_close_win(bufnr, winid)
 	if state.edit_mode then
-		update_marks(bufnr)
+		update_contents(bufnr)
 	end
 	close_win(winid, true)
 end
@@ -446,7 +456,7 @@ M.toggle_shortcut = function ()
 		update_and_close_win(state.bm_bufnr, state.bm_winid)
 		return
 	end
-	local ok = create_marks()
+	local ok = update_marks()
 	if not ok then return end
 	local contents = get_marklist(config.formatter)
 	state.bm_bufnr, state.bm_winid = create_window(contents)
