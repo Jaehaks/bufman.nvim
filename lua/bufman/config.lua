@@ -7,7 +7,7 @@ local M = {}
 ---@field extra_keys table<string, string>
 ---@field winopts table
 ---@field sort bm.config.sort
----@field focus_alternate_buffer boolean
+---@field focus string
 ---@field short_file_names boolean
 ---@field show_depth boolean
 ---@field short_term_names boolean
@@ -63,7 +63,11 @@ local default_config = {
 		method = nil,
 		reverse = false,
 	},
-	focus_alternate_buffer = false,
+	-- where you cursor focus at buffer manager startup
+	-- first : first line
+	-- current : current buffer
+	-- alternate : alternate buffer
+	focus = 'alternate', -- where first|current|alternate
 	short_file_names = false,
 	show_depth = true,
 	short_term_names = false,

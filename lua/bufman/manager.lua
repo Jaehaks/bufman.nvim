@@ -273,6 +273,19 @@ end
 ---@return number buffer id of buffer manager
 ---@return number window id of buffer manager
 local function create_window(contents)
+	-- get line number where you focus first
+	local focus_line
+	if config.focus == 'first' then
+		focus_line = 1
+	elseif config.focus == 'current' then
+		local focus_bufnr = vim.fn.bufnr()
+		focus_line = Utils.get_idx_from_buf(marks, focus_bufnr)
+	elseif config.focus == 'alternate' then
+		local focus_bufnr = vim.fn.bufnr('#')
+		focus_line = Utils.get_idx_from_buf(marks, focus_bufnr)
+	else
+		focus_line = 1
+	end
 
 	-- open floating window
 	local winopts = set_win_opts(contents)
@@ -282,7 +295,7 @@ local function create_window(contents)
 
 	-- set contents
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, contents)
-	vim.api.nvim_win_set_cursor(0, {1,0})						 -- set cursor position
+	vim.api.nvim_win_set_cursor(0, {focus_line,0})						 -- set cursor position
 
 	-- set options
 	vim.api.nvim_set_option_value("number", true, { win = winid })
