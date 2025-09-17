@@ -439,6 +439,78 @@ local function go_to_buffer(bufnr, winid, fallback_key, cmd)
 	vim.api.nvim_set_current_buf(bufnr)
 end
 
+-- reorder items by level, +1 means the mark goes up, -1 means down
+---@param level number how much you change order from current state
+---@return number start_idx
+---@return number end_idx
+local function reorder_marks(level)
+	local start_idx = vim.fn.getpos('v')[2]
+	local end_idx   = vim.fn.getpos('.')[2]
+	local diff_idx = end_idx - start_idx
+	local dest_start_idx = start_idx - level
+	local dest_end_idx = end_idx - level
+	if dest_start_idx < 1 then
+		dest_start_idx = 1
+		dest_end_idx = dest_start_idx + diff_idx
+	elseif dest_end_idx > #marks then
+		dest_end_idx = #marks
+		dest_start_idx = dest_end_idx - diff_idx
+	end
+
+	-- insert item before dest_start_idx
+	local new_marks = {}
+	local new_idx = 1
+	local choices_inserted = false
+	for i = 1, #marks do
+		if new_idx == dest_start_idx then
+			for k = start_idx, end_idx do
+				new_marks[new_idx] = marks[k]
+				new_idx = new_idx + 1
+			end
+			choices_inserted = true
+		end
+
+		if i < start_idx or i > end_idx then
+			new_marks[new_idx] = marks[i]
+			new_idx = new_idx + 1
+		end
+	end
+
+	-- insert rest of items
+	if not choices_inserted then
+		for i = start_idx, end_idx do
+			new_marks[new_idx] = marks[i]
+			new_idx = new_idx + 1
+		end
+	end
+	marks = new_marks
+	return start_idx, end_idx
+end
+
+-- reorder contents
+---@param level number how far to move items, +1 to up, -1 to down
+local function reorder_contents(level)
+	-- 'move' command more complicate to set mark, use set_liens()
+	local start_line, end_line = reorder_marks(level)
+	local contents = get_marklist(config.formatter)
+	vim.api.nvim_set_option_value('modifiable', true, { buf = state.bm_bufnr })
+	vim.api.nvim_buf_set_lines(state.bm_bufnr, 0, -1, false, contents)
+	vim.api.nvim_set_option_value('modifiable', false, { buf = state.bm_bufnr })
+
+	-- change cursor / visual region
+	local line_count = vim.api.nvim_buf_line_count(state.bm_bufnr)
+	local mode = vim.fn.mode()
+	local start_cursor = (start_line - level) < 1 and 1 or (start_line - level > line_count and line_count or start_line - level)
+	local end_cursor = (end_line - level) > line_count and line_count or end_line - level
+	if vim.tbl_contains({'v', 'V'}, mode) then
+		vim.api.nvim_buf_set_mark(state.bm_bufnr, '<', start_cursor, 0, {})
+		vim.api.nvim_buf_set_mark(state.bm_bufnr, '>', end_cursor, 999, {})
+		vim.cmd('normal! gv')
+	else
+		vim.api.nvim_win_set_cursor(state.bm_winid, {start_cursor,0})
+	end
+end
+
 -- set default keymaps
 ---@param bufnr number if 0, open mark at current cursor,
 ---@param winid number buffer manager's winid
@@ -451,6 +523,10 @@ local function set_keymaps(bufnr, winid)
 	-- h, l key
 	vim.keymap.set('n', 'h', function () block_key('h') end, opts)
 	vim.keymap.set('n', 'l', function () block_key('l') end, opts)
+	if not config.sort.method then
+		vim.keymap.set({'n', 'v'}, 'J', function () reorder_contents(1) end, opts)
+		vim.keymap.set({'n', 'v'}, 'K', function () reorder_contents(-1) end, opts)
+	end
 
 	-- Exit edit mode or close window
 	vim.keymap.set('n', 'q', function() update_and_close_win(bufnr, winid) end, opts)
