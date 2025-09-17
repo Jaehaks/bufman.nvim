@@ -464,7 +464,7 @@ local function set_keymaps(bufnr, winid)
 
 	-- set extra commands
 	for key, cmd in pairs(config.extra_keys) do
-		vim.keymap.set('n', key, function() go_to_buffer(0, winid, key, cmd) end)
+		vim.keymap.set('n', key, function() go_to_buffer(0, winid, key, cmd) end, opts)
 	end
 end
 
