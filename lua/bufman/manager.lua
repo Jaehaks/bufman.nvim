@@ -140,7 +140,44 @@ local function update_icons()
 	return true
 end
 
+-- reorder marks by method
+---@param method string?
+---@param reverse boolean
+local function update_order(method, reverse)
+	if not method then
+		return
+	elseif method == 'filename' then
+		table.sort(marks, function(a, b)
+			local a_value = string.lower(a.filename)
+			local b_value = string.lower(b.filename)
+			return a_value < b_value
+		end)
+	elseif method == 'bufnr' then
+		table.sort(marks, function(a, b)
+			return a.bufnr < b.bufnr
+		end)
+	elseif method == 'lastused' then
+		table.sort(marks, function(a, b)
+			local a_value = vim.fn.getbufinfo(a.bufnr)[1].lastused
+			local b_value = vim.fn.getbufinfo(b.bufnr)[1].lastused
+			if a_value == b_value then
+				return a.bufnr < b.bufnr
+			else
+				return a_value > b_value
+			end
+		end)
+	end
+	if reverse then
+		local reversed_marks = {}
+		for i = #marks, 1, -1 do
+			table.insert(reversed_marks, marks[i])
+		end
+		marks = reversed_marks
+	end
+end
+
 -- get listed buffer list
+---@return boolean
 local function update_marks()
 	-- remove unused mark
 	local buf_in_marks = {}
@@ -187,6 +224,7 @@ local function update_marks()
 	ok = update_duplicated('filename', 'minpath') -- check duplicated filename, and update minpath by step
 	ok = ok and update_shortcuts()   -- set shortcut keymaps to navigate
 	ok = ok and update_icons()   -- set shortcut keymaps to navigate
+	update_order(config.sort.method, config.sort.reverse) -- sort marks by method
 	return ok
 end
 

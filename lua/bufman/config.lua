@@ -6,6 +6,7 @@ local M = {}
 ---@field formatter string|bm.config.formatter
 ---@field extra_keys table<string, string>
 ---@field winopts table
+---@field sort bm.config.sort
 ---@field focus_alternate_buffer boolean
 ---@field short_file_names boolean
 ---@field show_depth boolean
@@ -22,6 +23,10 @@ local M = {}
 ---@class bm.config.shortcut
 ---@field charlist string
 ---@field use_first_letter boolean
+
+---@class bm.config.sort
+---@field method string?
+---@field reverse boolean
 
 ---@type bm.config
 local default_config = {
@@ -51,6 +56,12 @@ local default_config = {
 		width = 0.9,
 		height = nil,
 		borderchars = 'rounded',
+	},
+	-- sort buffer by bufnr|lastused|filename for navigating
+	-- if you don't want to sort, use nil
+	sort = {
+		method = nil,
+		reverse = false,
 	},
 	focus_alternate_buffer = false,
 	short_file_names = false,
