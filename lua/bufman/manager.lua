@@ -4,7 +4,7 @@ local config = require('bufman.config').get()
 
 ---@class bm.mark
 ---@field bufnr number
----@field filepath string
+---@field fullfile string
 ---@field filename string
 ---@field dirpath string
 ---@field minpath string
@@ -195,17 +195,17 @@ local function update_marks()
 	local altbufnr = vim.fn.bufnr('#')
 	local pwd = Utils.sep_unify(vim.fn.fnamemodify(vim.fn.getcwd(0), ':~'), nil, nil, true)
 	for _, bufnr in ipairs(buflist) do
-		local filepath = Utils.is_valid(bufnr)
-		if filepath and not vim.tbl_contains(buf_in_marks, bufnr) then
-			local dirpath = Utils.sep_unify(vim.fn.fnamemodify(filepath, ':~:h'), nil, nil, true)
+		local fullfile = Utils.is_valid(bufnr)
+		if fullfile and not vim.tbl_contains(buf_in_marks, bufnr) then
+			local dirpath = Utils.sep_unify(vim.fn.fnamemodify(fullfile, ':~:h'), nil, nil, true)
 			local focused = bufnr == curbufnr and '%' or ' '
 			local altered = bufnr == altbufnr and '#' or ' '
 			local modified = vim.api.nvim_get_option_value("modified", { buf = bufnr }) and '+' or ' '
 			local relpath_pwd = Utils.get_relative_path(dirpath, pwd)
 			table.insert(marks, {
 				bufnr        = bufnr,
-				filepath     = filepath,
-				filename     = vim.fn.fnamemodify(filepath, ':t'),
+				fullfile     = fullfile,
+				filename     = vim.fn.fnamemodify(fullfile, ':t'),
 				dirpath      = dirpath,
 				minpath      = '',
 				minlevel     = 0,
