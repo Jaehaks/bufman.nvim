@@ -282,7 +282,7 @@ local function create_window(contents)
 
 	-- set contents
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, contents)
-	vim.api.nvim_win_set_cursor(0, {1,1})						 -- set cursor position
+	vim.api.nvim_win_set_cursor(0, {1,0})						 -- set cursor position
 
 	-- set options
 	vim.api.nvim_set_option_value("number", true, { win = winid })
