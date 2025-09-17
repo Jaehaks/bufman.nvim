@@ -115,4 +115,16 @@ M.get_relative_path = function(filepath, basedir)
 	return M.sep_unify(path, sep)
 end
 
+-- get index of marks which is matched bufnr
+---@param marks bm.mark[]
+---@param bufnr number buffer id
+M.get_idx_from_buf = function(marks, bufnr)
+	for k, mark in ipairs(marks) do
+		if mark.bufnr == bufnr then
+			return k
+		end
+	end
+	return nil
+end
+
 return M
