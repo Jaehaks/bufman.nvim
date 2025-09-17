@@ -98,6 +98,9 @@ M.truncate_path = function(path, level)
 	for i = #parts, #parts-level+1, -1 do
 		result = parts[i] .. sep .. result
 	end
+	if level < #parts then -- add ':' for relative path
+		result = ':' .. result
+	end
 	return result
 end
 
@@ -108,11 +111,11 @@ end
 M.get_relative_path = function(filepath, basedir)
 	local path
 	if filepath:sub(1, #basedir) == basedir then
-		path = filepath:sub(#basedir + 1)
+		path = ':' .. filepath:sub(#basedir + 1)
 	else
 		path = filepath
 	end
-	return M.sep_unify(path, sep)
+	return M.sep_unify(path, sep, nil, true)
 end
 
 -- get index of marks which is matched bufnr
