@@ -500,8 +500,11 @@ local function reorder_contents(level)
 	-- change cursor / visual region
 	local line_count = vim.api.nvim_buf_line_count(state.bm_bufnr)
 	local mode = vim.fn.mode()
-	local start_cursor = (start_line - level) < 1 and 1 or (start_line - level > line_count and line_count or start_line - level)
+	local diff = end_line - start_line
+	local start_cursor = (start_line - level) < 1 and 1 or start_line - level
 	local end_cursor = (end_line - level) > line_count and line_count or end_line - level
+	start_cursor = end_cursor >= line_count and end_cursor - diff or start_cursor
+	end_cursor = start_cursor <= 1 and start_cursor + diff or end_cursor
 	if vim.tbl_contains({'v', 'V'}, mode) then
 		vim.api.nvim_buf_set_mark(state.bm_bufnr, '<', start_cursor, 0, {})
 		vim.api.nvim_buf_set_mark(state.bm_bufnr, '>', end_cursor, 999, {})
