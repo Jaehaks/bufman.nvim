@@ -282,6 +282,7 @@ local function create_window(contents)
 		focus_line = Utils.get_idx_from_buf(marks, focus_bufnr)
 	elseif config.focus == 'alternate' then
 		local focus_bufnr = vim.fn.bufnr('#')
+		focus_bufnr = focus_bufnr < 0 and vim.fn.bufnr() or focus_bufnr
 		focus_line = Utils.get_idx_from_buf(marks, focus_bufnr)
 	else
 		focus_line = 1
