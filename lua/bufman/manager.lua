@@ -93,7 +93,7 @@ end
 local function update_shortcuts()
 	local charlist = config.shortcut.charlist -- total character list to use shortcut
 	local use_first_letter = config.shortcut.use_first_letter
-	local ignore_chars = '[jkeq]' -- charlist to ignore as shortcut
+	local ignore_chars = '[jkeqhl]' -- charlist to ignore as shortcut
 
 	-- Remove reserved chars from charlist
 	charlist = charlist:gsub(ignore_chars, '')
@@ -571,9 +571,6 @@ local function set_keymaps(bufnr, winid)
 	-- toggle key
 	vim.keymap.set('n', 'e', function() toggle_edit(bufnr, winid) end, opts)
 
-	-- h, l key
-	vim.keymap.set('n', 'h', function () block_key('h') end, opts)
-	vim.keymap.set('n', 'l', function () block_key('l') end, opts)
 	if not config.sort.method then
 		vim.keymap.set({'n', 'v'}, 'J', function () reorder_contents(1) end, opts)
 		vim.keymap.set({'n', 'v'}, 'K', function () reorder_contents(-1) end, opts)
