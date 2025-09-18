@@ -98,6 +98,11 @@ local function update_shortcuts()
 	-- Remove reserved chars from charlist
 	charlist = charlist:gsub(ignore_chars, '')
 
+	-- initialize shortcut
+	for _, mark in ipairs(marks) do
+		mark.shortcut = ''
+	end
+
 	-- First pass: use first letter of filename if available and alphabetic
 	if use_first_letter then
 		for _, mark in ipairs(marks) do
