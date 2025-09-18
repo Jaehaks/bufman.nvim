@@ -136,14 +136,24 @@ M.get_relative_path = function(filepath, basedir)
 	return M.sep_unify(path, sep, nil, vim.fn.filereadable(vim.fn.expand(filepath)) == 0)
 end
 
--- get index of marks which is matched item
----@param marks bm.mark[]
+-- get index of marks which is matched value which is matched key
+---@param T table
 ---@param item string
 ---@param value any
 ---@return number?
-M.get_idx = function(marks, item, value)
-	for k, mark in ipairs(marks) do
-		if mark[item] == value then
+M.get_idx_by_key = function(T, item, value)
+	for k, t in ipairs(T) do
+		if t[item] == value then
+			return k
+		end
+	end
+	return nil
+end
+
+-- get index of marks which is matched value only
+M.get_idx_by_value = function(T, value)
+	for k, t in ipairs(T) do
+		if t == value then
 			return k
 		end
 	end
