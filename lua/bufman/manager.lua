@@ -334,11 +334,21 @@ end
 ---@param formatter string[]
 ---@return string[] contents table that will be displayed in buffer manager
 local function get_marklist(formatter)
+	local formatlist = vim.deepcopy(formatter)
+
+	-- remove shortcut / icon in edit mode
+	if state.edit_mode then
+		local remove_idx = Utils.get_idx_by_value(formatlist, 'shortcut')
+		table.remove(formatlist, remove_idx)
+		remove_idx = Utils.get_idx_by_value(formatlist, 'icon')
+		table.remove(formatlist, remove_idx)
+	end
+
 	-- get all raw contents using table form
 	local raws = {}
 	for _, mark in ipairs(marks) do
 		local items = {}
-		for _, item in ipairs(formatter) do
+		for _, item in ipairs(formatlist) do
 			if item == 'icon' then
 				table.insert(items, mark.icon[1])
 			else
@@ -351,7 +361,7 @@ local function get_marklist(formatter)
 	-- calculate max length of items
 	local tbl_maxlen = {}
 	local maxlen = 0
-	local len_item = #formatter
+	local len_item = #formatlist
 	for i = 1, len_item do
 		maxlen = 0
 		for _, raw in ipairs(raws) do
