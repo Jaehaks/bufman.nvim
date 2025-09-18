@@ -112,14 +112,12 @@ end
 ---@return string relative path of filepath
 M.get_relative_path = function(filepath, basedir)
 	local path
-	filepath = vim.fn.expand(filepath)
-	basedir = vim.fn.expand(basedir)
 	if filepath:sub(1, #basedir) == basedir then
 		path = ':' .. filepath:sub(#basedir + 1)
 	else
 		path = filepath
 	end
-	return M.sep_unify(path, sep, nil, vim.fn.filereadable(filepath) == 0)
+	return M.sep_unify(path, sep, nil, vim.fn.filereadable(vim.fn.expand(filepath)) == 0)
 end
 
 -- get index of marks which is matched bufnr
