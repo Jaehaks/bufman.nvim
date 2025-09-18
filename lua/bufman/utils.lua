@@ -160,4 +160,24 @@ M.get_idx_by_value = function(T, value)
 	return nil
 end
 
+
+-- get max length of each items in contents
+---@param T string[][]
+---@return number[]
+M.get_contents_maxlen = function (T)
+	local tbl_maxlen = {}
+	local maxlen = 0
+	local len_item = #T[1]
+	for i = 1, len_item do
+		maxlen = 0
+		for _, t in ipairs(T) do
+			if #t[i] > maxlen then
+				maxlen = #t[i]
+			end
+		end
+		tbl_maxlen[i] = maxlen
+	end
+	return tbl_maxlen
+end
+
 return M

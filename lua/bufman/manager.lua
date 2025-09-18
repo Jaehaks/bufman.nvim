@@ -359,18 +359,7 @@ local function get_marklist(formatter)
 	end
 
 	-- calculate max length of items
-	local tbl_maxlen = {}
-	local maxlen = 0
-	local len_item = #formatlist
-	for i = 1, len_item do
-		maxlen = 0
-		for _, raw in ipairs(raws) do
-			if #raw[i] > maxlen then
-				maxlen = #raw[i]
-			end
-		end
-		tbl_maxlen[i] = maxlen
-	end
+	local tbl_maxlen = Utils.get_contents_maxlen(raws)
 
 	-- adjust each column with white space
 	local contents = {}
