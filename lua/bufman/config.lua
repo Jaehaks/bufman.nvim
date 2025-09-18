@@ -3,7 +3,7 @@ local M = {}
 -- default configuration
 ---@class bm.config
 ---@field shortcut bm.config.shortcut
----@field formatter string|bm.config.formatter
+---@field formatter string[]
 ---@field extra_keys table<string, string>
 ---@field winopts table
 ---@field sort bm.config.sort
@@ -37,9 +37,7 @@ local default_config = {
 		use_first_letter = true, -- if true, set shortcut following first letter of file name
 								 -- If first letter is duplicated, it will be set by charlist
 	},
-	formatter = function(mark)
-		return {mark.shortcut, mark.icon[1], mark.filename, mark.relpath_pwd, mark.minpath}
-	end,
+	formatter = {'shortcut', 'icon', 'filename', 'relfile_pwd', 'minpath'},
 	-- extra keys to open in mormal mode
 	-- insert 'key = command' what you want
 	-- it is same with vim.cmd(command <selected item>) if you enter 'key' in normal mode

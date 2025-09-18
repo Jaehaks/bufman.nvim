@@ -331,19 +331,27 @@ local function create_window(contents)
 end
 
 
----@param formatter string|bm.config.formatter
+---@param formatter string[]
 ---@return string[] contents table that will be displayed in buffer manager
 local function get_marklist(formatter)
 	-- get all raw contents using table form
 	local raws = {}
 	for _, mark in ipairs(marks) do
-		table.insert(raws, formatter(mark))
+		local items = {}
+		for _, item in ipairs(formatter) do
+			if item == 'icon' then
+				table.insert(items, mark.icon[1])
+			else
+				table.insert(items, mark[item])
+			end
+		end
+		table.insert(raws, items)
 	end
 
 	-- calculate max length of items
 	local tbl_maxlen = {}
 	local maxlen = 0
-	local len_item = #formatter(marks[1])
+	local len_item = #formatter
 	for i = 1, len_item do
 		maxlen = 0
 		for _, raw in ipairs(raws) do
