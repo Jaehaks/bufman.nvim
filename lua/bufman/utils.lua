@@ -162,7 +162,7 @@ end
 
 
 -- get max length of each items in contents
----@param T string[][]
+---@param T bm.marklist.item[][]
 ---@return number[]
 M.get_contents_maxlen = function (T)
 	local tbl_maxlen = {}
@@ -171,8 +171,8 @@ M.get_contents_maxlen = function (T)
 	for i = 1, len_item do
 		maxlen = 0
 		for _, t in ipairs(T) do
-			if #t[i] > maxlen then
-				maxlen = #t[i]
+			if t[i].len > maxlen then
+				maxlen = t[i].len
 			end
 		end
 		tbl_maxlen[i] = maxlen

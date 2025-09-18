@@ -1,6 +1,7 @@
 local M = {}
 local Utils = require('bufman.utils')
 local config = require('bufman.config').get()
+local ns_id = require('bufman.highlight').ns_id
 
 ---@class bm.mark
 ---@field bufnr number
@@ -281,7 +282,7 @@ end
 ---@param contents string[] contents from formatter
 ---@return number buffer id of buffer manager
 ---@return number window id of buffer manager
-local function create_window(contents)
+local function create_window(contents, raws)
 	-- get line number where you focus first
 	local focus_line
 	if config.focus == 'first' then
@@ -309,6 +310,11 @@ local function create_window(contents)
 
 	-- set contents
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, contents)
+	for _, raw in ipairs(raws) do
+		for _, item in ipairs(raw) do
+			vim.api.nvim_buf_set_extmark(bufnr, ns_id, item.line, item.scol, {end_col = item.ecol, hl_group = item.hl})
+		end
+	end
 	vim.api.nvim_win_set_cursor(winid, {focus_line,0})						 -- set cursor position
 
 	-- set options
@@ -330,9 +336,18 @@ local function create_window(contents)
 	return bufnr, winid
 end
 
+---@class bm.marklist.item
+---@field type string format in config.formatter
+---@field line number line number in buffer manager to highlight
+---@field scol number start column to highlight
+---@field ecol number end column to highlight
+---@field str string displayed string for each format
+---@field len number length of str
+---@field hl string highlight group to apply str
 
 ---@param formatter string[]
 ---@return string[] contents table that will be displayed in buffer manager
+---@return bm.marklist.item[][] raw data of contents to highlight
 local function get_marklist(formatter)
 	local formatlist = vim.deepcopy(formatter)
 
@@ -345,17 +360,32 @@ local function get_marklist(formatter)
 	end
 
 	-- get all raw contents using table form
+	---@type bm.marklist.item[][]
 	local raws = {}
-	for _, mark in ipairs(marks) do
-		local items = {}
-		for _, item in ipairs(formatlist) do
-			if item == 'icon' then
-				table.insert(items, mark.icon[1])
+	for i, mark in ipairs(marks) do
+		---@type bm.marklist.item[]
+		local raw = {}
+		for _, format in ipairs(formatlist) do
+			---@type bm.marklist.item
+			local item = {}
+			if format == 'icon' then
+				item.str = mark.icon[1]
+				item.len = vim.fn.strwidth(mark.icon[1]) -- #icon has different length of string
+				item.hl = mark.icon[2]
+			elseif format == 'shortcut' then
+				item.str = mark.shortcut
+				item.len = #mark.shortcut
+				item.hl = 'BufmanShortcut'
 			else
-				table.insert(items, mark[item])
+				item.str = mark[format]
+				item.len = #mark[format]
+				item.hl = ''
 			end
+			item.type = format
+			item.line = i - 1
+			table.insert(raw, item)
 		end
-		table.insert(raws, items)
+		table.insert(raws, raw)
 	end
 
 	-- calculate max length of items
@@ -365,17 +395,28 @@ local function get_marklist(formatter)
 	local contents = {}
 	for k, raw in ipairs(raws) do
 		local result = {}
+		local len_result = 0
 		for i, item in ipairs(raw) do
-			local diff = tbl_maxlen[i] - #item
-			local item_adj = item .. string.rep(' ', diff)
+			local diff = tbl_maxlen[i] - item.len
+			local item_adj = item.str .. string.rep(' ', diff)
 			table.insert(result, item_adj)
+			item.scol = len_result
+			item.ecol = item.scol + item.len
+			len_result = len_result + vim.fn.strwidth(item_adj) + 1 -- consider ' '
+			if i == #raw then
+				local new_item_adj = item_adj:gsub('%s+$', '')
+				if #new_item_adj == 0 then
+					item.scol = raw[i-1].ecol
+					item.ecol = raw[i-1].ecol
+				end
+			end
 		end
 		local display_line = string.gsub(table.concat(result, ' '), '%s+$', '') -- remove white space at end
 		table.insert(contents, display_line)
 		marks[k].display_line = display_line -- update mark.display_line
 	end
 
-	return contents
+	return contents, raws
 end
 
 
@@ -410,10 +451,15 @@ local function update_contents(bufnr)
 	-- Refresh the marks
 	local ok = update_marks()
 	if not ok then return end
-	local contents = get_marklist(config.formatter)
+	local contents, raws = get_marklist(config.formatter)
 	local modifiable = vim.api.nvim_get_option_value('modifiable', { buf = bufnr })
 	vim.api.nvim_set_option_value('modifiable', true, { buf = bufnr })
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, contents)
+	for _, raw in ipairs(raws) do
+		for _, item in ipairs(raw) do
+			vim.api.nvim_buf_set_extmark(bufnr, ns_id, item.line, item.scol, {end_col = item.ecol, hl_group = item.hl})
+		end
+	end
 	vim.api.nvim_set_option_value('modifiable', modifiable, { buf = bufnr })
 end
 
@@ -612,8 +658,8 @@ M.toggle_shortcut = function ()
 	end
 	local ok = update_marks()
 	if not ok then return end
-	local contents = get_marklist(config.formatter)
-	state.bm_bufnr, state.bm_winid = create_window(contents)
+	local contents, raws = get_marklist(config.formatter)
+	state.bm_bufnr, state.bm_winid = create_window(contents, raws)
 	set_keymaps(state.bm_bufnr, state.bm_winid)
 	set_autocmds(state.bm_bufnr, state.bm_winid)
 end
