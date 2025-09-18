@@ -6,7 +6,7 @@ local config = require('bufman.config').get()
 ---@field bufnr number
 ---@field fullfile string
 ---@field filename string
----@field dirpath string
+---@field fulldir string
 ---@field minpath string
 ---@field minlevel number
 ---@field relpath_pwd string
@@ -64,7 +64,7 @@ local function update_minpath(counts)
 		cand = vim.inspect({mark.filename, mark.minpath})
 		if counts[cand] > 1 then
 			mark.minlevel = mark.minlevel + 1
-			mark.minpath = Utils.sep_unify(Utils.truncate_path(mark.dirpath, mark.minlevel), nil, nil, true)
+			mark.minpath = Utils.sep_unify(Utils.truncate_path(mark.fulldir, mark.minlevel), nil, nil, true)
 		end
 	end
 end
@@ -198,18 +198,18 @@ local function update_marks()
 		local fullfile = Utils.is_valid(bufnr)
 		if fullfile and not vim.tbl_contains(buf_in_marks, bufnr) then
 			fullfile = Utils.sep_unify(vim.fn.fnamemodify(fullfile, ':~'))
-			local dirpath = Utils.sep_unify(vim.fn.fnamemodify(fullfile, ':~:h'), nil, nil, true)
+			local fulldir = Utils.sep_unify(vim.fn.fnamemodify(fullfile, ':~:h'), nil, nil, true)
 			local focused = bufnr == curbufnr and '%' or ' '
 			local altered = bufnr == altbufnr and '#' or ' '
 			local modified = vim.api.nvim_get_option_value("modified", { buf = bufnr }) and '+' or ' '
-			local relpath_pwd = Utils.get_relative_path(dirpath, pwd)
+			local relpath_pwd = Utils.get_relative_path(fulldir, pwd)
 			local relfile_pwd = Utils.get_relative_path(fullfile, pwd)
 			table.insert(marks, {
 				bufnr        = bufnr,
 				fullfile     = fullfile,
 				relfile_pwd  = relfile_pwd,
 				filename     = vim.fn.fnamemodify(fullfile, ':t'),
-				dirpath      = dirpath,
+				fulldir      = fulldir,
 				minpath      = '',
 				minlevel     = 0,
 				relpath_pwd  = relpath_pwd,
