@@ -412,7 +412,10 @@ local function update_contents(bufnr)
 	local ok = update_marks()
 	if not ok then return end
 	local contents = get_marklist(config.formatter)
+	local modifiable = vim.api.nvim_get_option_value('modifiable', { buf = bufnr })
+	vim.api.nvim_set_option_value('modifiable', true, { buf = bufnr })
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, contents)
+	vim.api.nvim_set_option_value('modifiable', modifiable, { buf = bufnr })
 end
 
 -- toggle edit status
@@ -422,8 +425,8 @@ local function toggle_edit(bufnr, winid)
 	state.edit_mode = not state.edit_mode
 	if not state.edit_mode then
 		vim.api.nvim_win_set_cursor(winid, {1, 0})
-		update_contents(bufnr)
 	end
+	update_contents(bufnr)
 	vim.api.nvim_set_option_value('modifiable', state.edit_mode, { buf = bufnr })
 	vim.api.nvim_set_option_value('cursorline', not state.edit_mode, { win = winid })
 end
