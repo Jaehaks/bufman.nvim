@@ -5,11 +5,12 @@ local config = require('bufman.config').get()
 ---@class bm.mark
 ---@field bufnr number
 ---@field fullfile string
+---@field relfile_pwd string
 ---@field filename string
 ---@field fulldir string
+---@field relpath_pwd string
 ---@field minpath string
 ---@field minlevel number
----@field relpath_pwd string
 ---@field focused string|boolean
 ---@field altered string|boolean
 ---@field modified string|boolean
@@ -211,8 +212,8 @@ local function update_marks()
 				filename     = vim.fn.fnamemodify(fullfile, ':t'),
 				fulldir      = fulldir,
 				relpath_pwd  = relpath_pwd,
-				minlevel     = 0,
 				minpath      = '',
+				minlevel     = 0,
 				focused      = focused,
 				altered      = altered,
 				modified     = modified,
