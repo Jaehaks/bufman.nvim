@@ -45,6 +45,22 @@ M.is_valid = function(bufnr)
 	return nil
 end
 
+-- return bufnr which is matched with buffer name
+-- vim.fn.bufnr(name) cannot find the buffer properly when listed buffer is only one.
+---@param bufname string buffer name
+---@return number?
+M.get_buf_by_name = function(bufname)
+	local buflist = vim.api.nvim_list_bufs()
+	for _, bufid in ipairs(buflist) do
+		local name = vim.api.nvim_buf_get_name(bufid)
+		name = vim.fn.fnamemodify(name, ':t')
+		if name == bufname then
+			return bufid
+		end
+	end
+	return nil
+end
+
 -- return listed buffer list
 ---@return number[]
 local function get_valid_buflist()

@@ -299,13 +299,17 @@ local function create_window(contents)
 
 	-- open floating window
 	local winopts = set_win_opts(contents)
-	local bufnr = vim.api.nvim_create_buf(false, false)              -- set buffer temporarily
+
+	local bufnr = Utils.get_buf_by_name('bufman')
+	if not bufnr then
+		bufnr = vim.api.nvim_create_buf(false, false)              -- set buffer temporarily
+	end
 	local winid = vim.api.nvim_open_win(bufnr, true, winopts)        -- open window and enter
 	vim.api.nvim_buf_set_name(bufnr, "bufman")
 
 	-- set contents
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, contents)
-	vim.api.nvim_win_set_cursor(0, {focus_line,0})						 -- set cursor position
+	vim.api.nvim_win_set_cursor(winid, {focus_line,0})						 -- set cursor position
 
 	-- set options
 	vim.api.nvim_set_option_value("number", true, { win = winid })
