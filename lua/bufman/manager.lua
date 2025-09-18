@@ -538,6 +538,10 @@ end
 -- reorder contents
 ---@param level number how far to move items, +1 to up, -1 to down
 local function reorder_contents(level)
+	if config.sort.method then
+		return
+	end
+
 	-- 'move' command more complicate to set mark, use set_liens()
 	local start_line, end_line = reorder_marks(level)
 	local contents = get_marklist(config.formatter)
@@ -571,10 +575,9 @@ local function set_keymaps(bufnr, winid)
 	-- toggle key
 	vim.keymap.set('n', 'e', function() toggle_edit(bufnr, winid) end, opts)
 
-	if not config.sort.method then
-		vim.keymap.set({'n', 'v'}, 'J', function () reorder_contents(1) end, opts)
-		vim.keymap.set({'n', 'v'}, 'K', function () reorder_contents(-1) end, opts)
-	end
+	-- sort key
+	vim.keymap.set({'n', 'v'}, 'J', function () reorder_contents(1) end, opts)
+	vim.keymap.set({'n', 'v'}, 'K', function () reorder_contents(-1) end, opts)
 
 	-- Exit edit mode or close window
 	vim.keymap.set('n', 'q', function() update_and_close_win(bufnr, winid) end, opts)
