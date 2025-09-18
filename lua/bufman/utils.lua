@@ -35,10 +35,12 @@ end
 ---@param bufnr number buffer id
 ---@return string? filename of bufnr
 M.is_valid = function(bufnr)
-	local filepath = vim.api.nvim_buf_get_name(bufnr)
 	local buflisted = vim.fn.buflisted(bufnr) == 1
-	if buflisted and (filepath ~= '') then
-		return filepath
+	if buflisted then
+		local filepath = vim.api.nvim_buf_get_name(bufnr)
+		if filepath ~= '' then
+			return filepath
+		end
 	end
 	return nil
 end
