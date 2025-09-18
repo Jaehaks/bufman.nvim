@@ -197,14 +197,17 @@ local function update_marks()
 	for _, bufnr in ipairs(buflist) do
 		local fullfile = Utils.is_valid(bufnr)
 		if fullfile and not vim.tbl_contains(buf_in_marks, bufnr) then
+			fullfile = Utils.sep_unify(vim.fn.fnamemodify(fullfile, ':~'))
 			local dirpath = Utils.sep_unify(vim.fn.fnamemodify(fullfile, ':~:h'), nil, nil, true)
 			local focused = bufnr == curbufnr and '%' or ' '
 			local altered = bufnr == altbufnr and '#' or ' '
 			local modified = vim.api.nvim_get_option_value("modified", { buf = bufnr }) and '+' or ' '
 			local relpath_pwd = Utils.get_relative_path(dirpath, pwd)
+			local relfile_pwd = Utils.get_relative_path(fullfile, pwd)
 			table.insert(marks, {
 				bufnr        = bufnr,
 				fullfile     = fullfile,
+				relfile_pwd  = relfile_pwd,
 				filename     = vim.fn.fnamemodify(fullfile, ':t'),
 				dirpath      = dirpath,
 				minpath      = '',
