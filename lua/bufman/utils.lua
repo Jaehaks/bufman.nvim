@@ -136,12 +136,14 @@ M.get_relative_path = function(filepath, basedir)
 	return M.sep_unify(path, sep, nil, vim.fn.filereadable(vim.fn.expand(filepath)) == 0)
 end
 
--- get index of marks which is matched bufnr
+-- get index of marks which is matched item
 ---@param marks bm.mark[]
----@param bufnr number buffer id
-M.get_idx_from_buf = function(marks, bufnr)
+---@param item string
+---@param value any
+---@return number?
+M.get_idx = function(marks, item, value)
 	for k, mark in ipairs(marks) do
-		if mark.bufnr == bufnr then
+		if mark[item] == value then
 			return k
 		end
 	end
