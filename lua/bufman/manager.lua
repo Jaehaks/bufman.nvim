@@ -401,7 +401,9 @@ local function get_marklist(formatter)
 		local remove_format = {'shortcut', 'icon', 'bufnr', 'indicator'}
 		for _, format in ipairs(remove_format) do
 			local idx = Utils.get_idx_by_value(formatlist, format)
-			table.remove(formatlist, idx)
+			if idx then
+				table.remove(formatlist, idx)
+			end
 		end
 	end
 
