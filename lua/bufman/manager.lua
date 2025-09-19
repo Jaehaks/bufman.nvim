@@ -352,10 +352,11 @@ local function get_marklist(formatter)
 
 	-- remove shortcut / icon in edit mode
 	if state.edit_mode then
-		local remove_idx = Utils.get_idx_by_value(formatlist, 'shortcut')
-		table.remove(formatlist, remove_idx)
-		remove_idx = Utils.get_idx_by_value(formatlist, 'icon')
-		table.remove(formatlist, remove_idx)
+		local remove_format = {'shortcut', 'icon', 'bufnr'}
+		for _, format in ipairs(remove_format) do
+			local idx = Utils.get_idx_by_value(formatlist, format)
+			table.remove(formatlist, idx)
+		end
 	end
 
 	-- get all raw contents using table form
