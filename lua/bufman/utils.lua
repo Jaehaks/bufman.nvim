@@ -151,6 +151,9 @@ M.get_idx_by_key = function(T, item, value)
 end
 
 -- get index of marks which is matched value only
+---@param T table
+---@param value any
+---@return number?
 M.get_idx_by_value = function(T, value)
 	for k, t in ipairs(T) do
 		if t == value then
@@ -180,6 +183,10 @@ M.get_contents_maxlen = function (T)
 	return tbl_maxlen
 end
 
+-- set highlight to buffer
+---@param bufnr number
+---@param ns_id number namespace id
+---@param raws bm.marklist.item[][]
 M.set_highlight = function(bufnr, ns_id, raws)
 	vim.api.nvim_buf_clear_namespace(bufnr, ns_id, 0, -1)
 	for _, raw in ipairs(raws) do
