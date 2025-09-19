@@ -10,6 +10,7 @@ local ns_id = require('bufman.highlight').ns_id
 ---@field filename string
 ---@field fulldir string
 ---@field relpath_pwd string
+---@field minfile string
 ---@field mindir string
 ---@field minlevel number
 ---@field indicator string
@@ -66,6 +67,7 @@ local function update_mindir(counts)
 			mark.minlevel = mark.minlevel + 1
 			mark.mindir = Utils.sep_unify(Utils.truncate_path(mark.fulldir, mark.minlevel), nil, nil, true)
 		end
+		mark.minfile = mark.mindir .. mark.filename
 	end
 end
 
@@ -223,7 +225,8 @@ local function update_marks()
 				filename     = vim.fn.fnamemodify(fullfile, ':t'),
 				fulldir      = fulldir,
 				relpath_pwd  = relpath_pwd,
-				mindir      = '',
+				minfile      = '',
+				mindir       = '',
 				minlevel     = 0,
 				indicator    = '',
 				shortcut     = '',
