@@ -9,7 +9,7 @@ local ns_id = require('bufman.highlight').ns_id
 ---@field relfile_pwd string
 ---@field filename string
 ---@field fulldir string
----@field relpath_pwd string
+---@field reldir_pwd string
 ---@field minfile string
 ---@field mindir string
 ---@field minlevel number
@@ -57,7 +57,7 @@ local function check_duplicated_mark(duplicate, distinguish)
 	return counts
 end
 
--- update relpath of marks
+-- update reldir of marks
 ---@param counts bm.dupCount[]
 local function update_mindir(counts)
 	for _, mark in ipairs(marks) do
@@ -72,7 +72,7 @@ local function update_mindir(counts)
 end
 
 
--- update duplicated relpath of marks
+-- update duplicated reldir of marks
 ---@param duplicate string marks field which concerns duplication
 ---@param distinguish string marks field which distinguish duplicate field
 ---@return boolean
@@ -216,7 +216,7 @@ local function update_marks()
 		if fullfile and not vim.tbl_contains(buf_in_marks, bufnr) then
 			fullfile = Utils.sep_unify(vim.fn.fnamemodify(fullfile, ':~'))
 			local fulldir = Utils.sep_unify(vim.fn.fnamemodify(fullfile, ':~:h'), nil, nil, true)
-			local relpath_pwd = Utils.get_relative_path(fulldir, pwd)
+			local reldir_pwd = Utils.get_relative_path(fulldir, pwd)
 			local relfile_pwd = Utils.get_relative_path(fullfile, pwd)
 			table.insert(marks, {
 				bufnr        = bufnr,
@@ -224,7 +224,7 @@ local function update_marks()
 				relfile_pwd  = relfile_pwd,
 				filename     = vim.fn.fnamemodify(fullfile, ':t'),
 				fulldir      = fulldir,
-				relpath_pwd  = relpath_pwd,
+				reldir_pwd   = reldir_pwd,
 				minfile      = '',
 				mindir       = '',
 				minlevel     = 0,
