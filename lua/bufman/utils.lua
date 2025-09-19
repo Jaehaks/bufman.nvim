@@ -180,4 +180,14 @@ M.get_contents_maxlen = function (T)
 	return tbl_maxlen
 end
 
+M.set_highlight = function(bufnr, ns_id, raws)
+	vim.api.nvim_buf_clear_namespace(bufnr, ns_id, 0, -1)
+	for _, raw in ipairs(raws) do
+		for _, item in ipairs(raw) do
+			vim.api.nvim_buf_set_extmark(bufnr, ns_id, item.line, item.scol, {end_col = item.ecol, hl_group = item.hl})
+		end
+	end
+end
+
+
 return M

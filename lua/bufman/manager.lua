@@ -310,11 +310,7 @@ local function create_window(contents, raws)
 
 	-- set contents
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, contents)
-	for _, raw in ipairs(raws) do
-		for _, item in ipairs(raw) do
-			vim.api.nvim_buf_set_extmark(bufnr, ns_id, item.line, item.scol, {end_col = item.ecol, hl_group = item.hl})
-		end
-	end
+	Utils.set_highlight(bufnr, ns_id, raws)
 	vim.api.nvim_win_set_cursor(winid, {focus_line,0})						 -- set cursor position
 
 	-- set options
@@ -370,7 +366,7 @@ local function get_marklist(formatter)
 			local item = {}
 			if format == 'icon' then
 				item.str = mark.icon[1]
-				item.len = vim.fn.strwidth(mark.icon[1]) -- #icon has different length of string
+				item.len = vim.api.nvim_strwidth(mark.icon[1]) -- #icon has different length of string
 				item.hl = mark.icon[2]
 			elseif format == 'shortcut' then
 				item.str = mark.shortcut
@@ -401,11 +397,11 @@ local function get_marklist(formatter)
 			local item_adj = item.str .. string.rep(' ', diff)
 			table.insert(result, item_adj)
 			item.scol = len_result
-			item.ecol = item.scol + item.len
-			len_result = len_result + vim.fn.strwidth(item_adj) + 1 -- consider ' '
+			item.ecol = item.scol + #item.str
+			-- len_result = len_result + vim.fn.strwidth(item_adj) + 1 -- consider ' '
+			len_result = len_result + #item_adj + 1 -- consider ' '
 			if i == #raw then
-				local new_item_adj = item_adj:gsub('%s+$', '')
-				if #new_item_adj == 0 then
+				if item.len == 0 then
 					item.scol = raw[i-1].ecol
 					item.ecol = raw[i-1].ecol
 				end
@@ -455,11 +451,7 @@ local function update_contents(bufnr)
 	local modifiable = vim.api.nvim_get_option_value('modifiable', { buf = bufnr })
 	vim.api.nvim_set_option_value('modifiable', true, { buf = bufnr })
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, contents)
-	for _, raw in ipairs(raws) do
-		for _, item in ipairs(raw) do
-			vim.api.nvim_buf_set_extmark(bufnr, ns_id, item.line, item.scol, {end_col = item.ecol, hl_group = item.hl})
-		end
-	end
+	Utils.set_highlight(bufnr, ns_id, raws)
 	vim.api.nvim_set_option_value('modifiable', modifiable, { buf = bufnr })
 end
 
