@@ -420,13 +420,10 @@ local function get_marklist(formatter)
 			table.insert(result, item_adj)
 			item.scol = len_result
 			item.ecol = item.scol + #item.str
-			-- len_result = len_result + vim.fn.strwidth(item_adj) + 1 -- consider ' '
 			len_result = len_result + #item_adj + 1 -- consider ' '
-			if i == #hlinfo then
-				if item.len == 0 then
-					item.scol = hlinfo[i-1].ecol
-					item.ecol = hlinfo[i-1].ecol
-				end
+			if item.len == 0 then
+				item.scol = hlinfo[i-1].ecol
+				item.ecol = hlinfo[i-1].ecol
 			end
 		end
 		local display_line = string.gsub(table.concat(result, ' '), '%s+$', '') -- remove white space at end
