@@ -147,7 +147,7 @@ local function update_icons()
 	return true
 end
 
--- update icon by filename
+-- update indicator
 local function update_indicator()
 	local curbufnr = vim.api.nvim_get_current_buf() -- focused buffer
 	local altbufnr = vim.fn.bufnr('#')
