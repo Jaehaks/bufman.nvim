@@ -12,9 +12,7 @@ local ns_id = require('bufman.highlight').ns_id
 ---@field relpath_pwd string
 ---@field minpath string
 ---@field minlevel number
----@field focused string|boolean
----@field altered string|boolean
----@field modified string|boolean
+---@field indicator string
 ---@field shortcut string
 ---@field icon bm.mark.icon
 ---@field display_line string string which is displayed in buffer manager to notice this mark
@@ -147,6 +145,18 @@ local function update_icons()
 	return true
 end
 
+-- update icon by filename
+local function update_indicator()
+	local curbufnr = vim.api.nvim_get_current_buf() -- focused buffer
+	local altbufnr = vim.fn.bufnr('#')
+	for _, mark in ipairs(marks) do
+		local focused = mark.bufnr == curbufnr and '%' or ' '
+		local altered = mark.bufnr == altbufnr and '#' or ' '
+		local modified = vim.api.nvim_get_option_value("modified", { buf = mark.bufnr }) and '+' or ' '
+		mark.indicator = modified .. (focused ~= ' ' and focused or altered)
+	end
+end
+
 -- reorder marks by method
 ---@param method string?
 ---@param reverse boolean
@@ -198,17 +208,12 @@ local function update_marks()
 
 	-- add additional buffers to marks
 	local buflist = vim.api.nvim_list_bufs()
-	local curbufnr = vim.api.nvim_get_current_buf() -- focused buffer
-	local altbufnr = vim.fn.bufnr('#')
 	local pwd = Utils.sep_unify(vim.fn.fnamemodify(vim.fn.getcwd(0), ':~'), nil, nil, true)
 	for _, bufnr in ipairs(buflist) do
 		local fullfile = Utils.is_valid(bufnr)
 		if fullfile and not vim.tbl_contains(buf_in_marks, bufnr) then
 			fullfile = Utils.sep_unify(vim.fn.fnamemodify(fullfile, ':~'))
 			local fulldir = Utils.sep_unify(vim.fn.fnamemodify(fullfile, ':~:h'), nil, nil, true)
-			local focused = bufnr == curbufnr and '%' or ' '
-			local altered = bufnr == altbufnr and '#' or ' '
-			local modified = vim.api.nvim_get_option_value("modified", { buf = bufnr }) and '+' or ' '
 			local relpath_pwd = Utils.get_relative_path(fulldir, pwd)
 			local relfile_pwd = Utils.get_relative_path(fullfile, pwd)
 			table.insert(marks, {
@@ -220,9 +225,10 @@ local function update_marks()
 				relpath_pwd  = relpath_pwd,
 				minpath      = '',
 				minlevel     = 0,
-				focused      = focused,
-				altered      = altered,
-				modified     = modified,
+				focused      = '',
+				altered      = '',
+				modified     = '',
+				indicator    = '',
 				shortcut     = '',
 				icon         = {' ', 'Normal'},
 				display_line = ''
@@ -234,6 +240,7 @@ local function update_marks()
 	ok = update_duplicated('filename', 'minpath') -- check duplicated filename, and update minpath by step
 	ok = ok and update_shortcuts()   -- set shortcut keymaps to navigate
 	ok = ok and update_icons()   -- set shortcut keymaps to navigate
+	update_indicator()
 	update_order(config.sort.method, config.sort.reverse) -- sort marks by method
 	return ok
 end
