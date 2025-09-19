@@ -342,7 +342,6 @@ local function create_window(contents, hlinfos)
 		end
 	end
 
-	state.edit_mode = false -- start always normal mode
 	return bufnr, winid
 end
 
@@ -509,6 +508,7 @@ end
 local function update_and_close_win(bufnr, winid)
 	if state.edit_mode then
 		update_contents(bufnr)
+		-- state.edit_mode = false
 	end
 	close_win(winid, true)
 end
@@ -657,6 +657,7 @@ local function set_autocmds(bufnr, winid)
 			-- end
 			state.bm_winid = nil
 			state.bm_bufnr = nil
+			state.edit_mode = false
 		end
 	})
 end
