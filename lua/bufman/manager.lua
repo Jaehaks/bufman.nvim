@@ -628,10 +628,10 @@ end
 
 local function set_autocmds(bufnr, winid)
 	-- reset bm_winid at closed
-	vim.api.nvim_create_augroup('BM_Manager', {clear = true})
+	vim.api.nvim_create_augroup('Bufman_Manager', {clear = true})
 	vim.api.nvim_create_autocmd('WinClosed', {
 		buffer = bufnr,
-		group = 'BM_Manager',
+		group = 'Bufman_Manager',
 		callback = function ()
 			-- if bufman_bufnr then
 			-- 	vim.api.nvim_buf_delete(bufman_bufnr, { force = false })
