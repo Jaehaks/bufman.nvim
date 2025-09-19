@@ -8,15 +8,6 @@ local M = {}
 ---@field winopts table
 ---@field sort bm.config.sort
 ---@field focus string
----@field short_file_names boolean
----@field show_depth boolean
----@field short_term_names boolean
----@field loop_nav boolean
----@field highlight string
----@field win_extra_options table
----@field borderchars string|string[]
----@field order_buffers number?
----@field show_indicators number?
 
 ---@alias bm.config.formatter fun(mark: bm.mark):table
 
@@ -66,14 +57,6 @@ local default_config = {
 	-- current : current buffer
 	-- alternate : alternate buffer
 	focus = 'alternate', -- where first|current|alternate
-	short_file_names = false,
-	show_depth = true,
-	short_term_names = false,
-	loop_nav = true,
-	highlight = "",
-	win_extra_options = {},
-	order_buffers = nil,
-	show_indicators = nil,
 }
 
 local config = vim.deepcopy(default_config)
