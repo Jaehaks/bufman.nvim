@@ -55,6 +55,7 @@ local default_config = {
 	extra_keys = {
 		['<C-v>'] = 'vsplit',
 		['<C-h>'] = 'split',
+		['<C-f>'] = 'only',
 	},
 	-- window options
 	-- these items are supported only

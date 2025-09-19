@@ -528,8 +528,7 @@ local function go_to_buffer(bufnr, winid, fallback_key, cmd)
 		bufnr = marks[idx].bufnr
 	end
 	close_win(winid, true)
-	if not cmd then cmd = 'only' end
-	vim.cmd(cmd)
+	if cmd then vim.cmd(cmd) end
 	vim.api.nvim_set_current_buf(bufnr)
 end
 
