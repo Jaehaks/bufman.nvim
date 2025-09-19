@@ -571,9 +571,10 @@ local function reorder_contents(level)
 
 	-- 'move' command more complicate to set mark, use set_liens()
 	local start_line, end_line = reorder_marks(level)
-	local contents = get_marklist(config.formatter)
+	local contents, raws = get_marklist(config.formatter)
 	vim.api.nvim_set_option_value('modifiable', true, { buf = state.bm_bufnr })
 	vim.api.nvim_buf_set_lines(state.bm_bufnr, 0, -1, false, contents)
+	Utils.set_highlight(state.bm_bufnr, ns_id, raws)
 	vim.api.nvim_set_option_value('modifiable', false, { buf = state.bm_bufnr })
 
 	-- change cursor / visual region
