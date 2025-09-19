@@ -280,9 +280,10 @@ local function set_win_opts(contents)
 end
 
 ---@param contents string[] contents from formatter
+---@param hlinfos bm.marklist.item[][] highlight information of each components of buffer manager
 ---@return number buffer id of buffer manager
 ---@return number window id of buffer manager
-local function create_window(contents, raws)
+local function create_window(contents, hlinfos)
 	-- get line number where you focus first
 	local focus_line
 	if config.focus == 'first' then
@@ -310,7 +311,7 @@ local function create_window(contents, raws)
 
 	-- set contents
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, contents)
-	Utils.set_highlight(bufnr, ns_id, raws)
+	Utils.set_highlight(bufnr, ns_id, hlinfos)
 	vim.api.nvim_win_set_cursor(winid, {focus_line,0})						 -- set cursor position
 
 	-- set options
@@ -344,28 +345,17 @@ end
 ---@field len number length of str
 ---@field hl string highlight group to apply str
 
+-- get highlight information for each mark contents
 ---@param formatter string[]
----@return string[] contents table that will be displayed in buffer manager
----@return bm.marklist.item[][] raw data of contents to highlight
-local function get_marklist(formatter)
-	local formatlist = vim.deepcopy(formatter)
-
-	-- remove shortcut / icon in edit mode
-	if state.edit_mode then
-		local remove_format = {'shortcut', 'icon', 'bufnr'}
-		for _, format in ipairs(remove_format) do
-			local idx = Utils.get_idx_by_value(formatlist, format)
-			table.remove(formatlist, idx)
-		end
-	end
-
+---@return bm.marklist.item[][]
+local function get_hlinfo(formatter)
 	-- get all raw contents using table form
 	---@type bm.marklist.item[][]
-	local raws = {}
+	local hlinfos = {}
 	for i, mark in ipairs(marks) do
 		---@type bm.marklist.item[]
-		local raw = {}
-		for _, format in ipairs(formatlist) do
+		local hlinfo = {}
+		for _, format in ipairs(formatter) do
 			---@type bm.marklist.item
 			local item = {}
 			if format == 'icon' then
@@ -383,20 +373,41 @@ local function get_marklist(formatter)
 			end
 			item.type = format
 			item.line = i - 1
-			table.insert(raw, item)
+			table.insert(hlinfo, item)
 		end
-		table.insert(raws, raw)
+		table.insert(hlinfos, hlinfo)
 	end
 
+	return hlinfos
+end
+
+---@param formatter string[]
+---@return string[] contents table that will be displayed in buffer manager
+---@return bm.marklist.item[][] raw data of contents to highlight
+local function get_marklist(formatter)
+	local formatlist = vim.deepcopy(formatter)
+
+	-- remove shortcut / icon in edit mode
+	if state.edit_mode then
+		local remove_format = {'shortcut', 'icon', 'bufnr'}
+		for _, format in ipairs(remove_format) do
+			local idx = Utils.get_idx_by_value(formatlist, format)
+			table.remove(formatlist, idx)
+		end
+	end
+
+	---@type bm.marklist.item[][]
+	local hlinfors = get_hlinfo(formatlist)
+
 	-- calculate max length of items
-	local tbl_maxlen = Utils.get_contents_maxlen(raws)
+	local tbl_maxlen = Utils.get_contents_maxlen(hlinfors)
 
 	-- adjust each column with white space
 	local contents = {}
-	for k, raw in ipairs(raws) do
+	for k, hlinfo in ipairs(hlinfors) do
 		local result = {}
 		local len_result = 0
-		for i, item in ipairs(raw) do
+		for i, item in ipairs(hlinfo) do
 			local diff = tbl_maxlen[i] - item.len
 			local item_adj = item.str .. string.rep(' ', diff)
 			table.insert(result, item_adj)
@@ -404,10 +415,10 @@ local function get_marklist(formatter)
 			item.ecol = item.scol + #item.str
 			-- len_result = len_result + vim.fn.strwidth(item_adj) + 1 -- consider ' '
 			len_result = len_result + #item_adj + 1 -- consider ' '
-			if i == #raw then
+			if i == #hlinfo then
 				if item.len == 0 then
-					item.scol = raw[i-1].ecol
-					item.ecol = raw[i-1].ecol
+					item.scol = hlinfo[i-1].ecol
+					item.ecol = hlinfo[i-1].ecol
 				end
 			end
 		end
@@ -416,7 +427,7 @@ local function get_marklist(formatter)
 		marks[k].display_line = display_line -- update mark.display_line
 	end
 
-	return contents, raws
+	return contents, hlinfors
 end
 
 
@@ -451,11 +462,11 @@ local function update_contents(bufnr)
 	-- Refresh the marks
 	local ok = update_marks()
 	if not ok then return end
-	local contents, raws = get_marklist(config.formatter)
+	local contents, hlinfos = get_marklist(config.formatter)
 	local modifiable = vim.api.nvim_get_option_value('modifiable', { buf = bufnr })
 	vim.api.nvim_set_option_value('modifiable', true, { buf = bufnr })
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, contents)
-	Utils.set_highlight(bufnr, ns_id, raws)
+	Utils.set_highlight(bufnr, ns_id, hlinfos)
 	vim.api.nvim_set_option_value('modifiable', modifiable, { buf = bufnr })
 end
 
@@ -572,10 +583,10 @@ local function reorder_contents(level)
 
 	-- 'move' command more complicate to set mark, use set_liens()
 	local start_line, end_line = reorder_marks(level)
-	local contents, raws = get_marklist(config.formatter)
+	local contents, hlinfos = get_marklist(config.formatter)
 	vim.api.nvim_set_option_value('modifiable', true, { buf = state.bm_bufnr })
 	vim.api.nvim_buf_set_lines(state.bm_bufnr, 0, -1, false, contents)
-	Utils.set_highlight(state.bm_bufnr, ns_id, raws)
+	Utils.set_highlight(state.bm_bufnr, ns_id, hlinfos)
 	vim.api.nvim_set_option_value('modifiable', false, { buf = state.bm_bufnr })
 
 	-- change cursor / visual region
@@ -656,8 +667,8 @@ M.toggle_shortcut = function ()
 	end
 	local ok = update_marks()
 	if not ok then return end
-	local contents, raws = get_marklist(config.formatter)
-	state.bm_bufnr, state.bm_winid = create_window(contents, raws)
+	local contents, hlinfos = get_marklist(config.formatter)
+	state.bm_bufnr, state.bm_winid = create_window(contents, hlinfos)
 	set_keymaps(state.bm_bufnr, state.bm_winid)
 	set_autocmds(state.bm_bufnr, state.bm_winid)
 end
