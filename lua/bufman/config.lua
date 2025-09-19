@@ -29,7 +29,26 @@ local default_config = {
 		use_first_letter = true, -- if true, set shortcut following first letter of file name
 								 -- If first letter is duplicated, it will be set by charlist
 	},
-	formatter = {'shortcut', 'icon', 'filename', 'relfile_pwd', 'minpath'},
+	-- Format which items are shown in buffer manager.
+	-- All absolute paths are displayed with relative of '~'.
+	-- All relative paths starts with ':' if they are displayed under ~
+	-- These fields will be separated with white space and left aligned.
+	-- In edit mode with 'e', {bufnr, icon, shortcut, indicator} will be hidden.
+	-- bufnr : buffer id
+	-- fullfile : absolute path of file
+	-- relfile_pwd : relative file path of current pwd of focused buffer before buffer manager opens
+	-- filename : filename and extension only
+	-- fulldir : absolute path of parent directory of each file
+	-- reldir_pwd : relative parent directory path of current pwd of focused buffer
+	-- minfile : show filename as default, prepends parent path until these files can be distinguished
+	-- 			 when they have same filename. such as ':bufman/init.lua'
+	-- mindir : show empty as default, show parent path until these files can be distinguished
+	-- 			when they have same filename. ':bufman/'
+	-- indicator : 2 characters which supports showing buffer states. +# or +%
+	-- 			   + means modified / # means alternate buffer / % means current focused buffer
+	-- shortcut : shortcut to go to buffer (required)
+	-- icon : icon by nvim-web-devicons
+	formatter = {'shortcut', 'icon', 'indicator', 'filename', 'mindir'},
 	-- extra keys to open in mormal mode
 	-- insert 'key = command' what you want
 	-- it is same with vim.cmd(command <selected item>) if you enter 'key' in normal mode
