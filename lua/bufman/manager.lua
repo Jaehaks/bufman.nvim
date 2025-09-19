@@ -10,7 +10,7 @@ local ns_id = require('bufman.highlight').ns_id
 ---@field filename string
 ---@field fulldir string
 ---@field relpath_pwd string
----@field minpath string
+---@field mindir string
 ---@field minlevel number
 ---@field indicator string
 ---@field shortcut string
@@ -58,13 +58,13 @@ end
 
 -- update relpath of marks
 ---@param counts bm.dupCount[]
-local function update_minpath(counts)
+local function update_mindir(counts)
 	for _, mark in ipairs(marks) do
 		local cand
-		cand = vim.inspect({mark.filename, mark.minpath})
+		cand = vim.inspect({mark.filename, mark.mindir})
 		if counts[cand] > 1 then
 			mark.minlevel = mark.minlevel + 1
-			mark.minpath = Utils.sep_unify(Utils.truncate_path(mark.fulldir, mark.minlevel), nil, nil, true)
+			mark.mindir = Utils.sep_unify(Utils.truncate_path(mark.fulldir, mark.minlevel), nil, nil, true)
 		end
 	end
 end
@@ -80,8 +80,8 @@ local function update_duplicated(duplicate, distinguish)
 		if Utils.get_length(counts) == #marks then
 			break
 		end
-		if distinguish == 'minpath' then
-			update_minpath(counts)
+		if distinguish == 'mindir' then
+			update_mindir(counts)
 		end
 	end
 	return true
@@ -223,7 +223,7 @@ local function update_marks()
 				filename     = vim.fn.fnamemodify(fullfile, ':t'),
 				fulldir      = fulldir,
 				relpath_pwd  = relpath_pwd,
-				minpath      = '',
+				mindir      = '',
 				minlevel     = 0,
 				indicator    = '',
 				shortcut     = '',
@@ -234,7 +234,7 @@ local function update_marks()
 	end
 
 	local ok = nil
-	ok = update_duplicated('filename', 'minpath') -- check duplicated filename, and update minpath by step
+	ok = update_duplicated('filename', 'mindir') -- check duplicated filename, and update mindir by step
 	ok = ok and update_shortcuts()   -- set shortcut keymaps to navigate
 	ok = ok and update_icons()   -- set shortcut keymaps to navigate
 	update_indicator()
