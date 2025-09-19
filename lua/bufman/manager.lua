@@ -463,9 +463,6 @@ end
 ---@param winid number
 local function toggle_edit(bufnr, winid)
 	state.edit_mode = not state.edit_mode
-	if not state.edit_mode then
-		vim.api.nvim_win_set_cursor(winid, {1, 0})
-	end
 	update_contents(bufnr)
 	vim.api.nvim_set_option_value('modifiable', state.edit_mode, { buf = bufnr })
 	vim.api.nvim_set_option_value('cursorline', not state.edit_mode, { win = winid })
