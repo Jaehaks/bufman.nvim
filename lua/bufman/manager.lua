@@ -314,18 +314,21 @@ local function create_window(contents, raws)
 	vim.api.nvim_win_set_cursor(winid, {focus_line,0})						 -- set cursor position
 
 	-- set options
-	vim.api.nvim_set_option_value("number", true, { win = winid })
 	vim.api.nvim_set_option_value("filetype", "bufman", { buf = bufnr })
 	vim.api.nvim_set_option_value("buftype", "acwrite", { buf = bufnr })
 	vim.api.nvim_set_option_value("bufhidden", "delete", { buf = bufnr })
-	vim.api.nvim_set_option_value('signcolumn', 'no', { win = winid })
 	vim.api.nvim_set_option_value('modifiable', false, { buf = bufnr })
 	vim.api.nvim_set_option_value('modified', false, { buf = bufnr })
-	if config.highlight ~= '' then
-		vim.api.nvim_set_option_value("winhighlight", config.highlight, { win = winid })
-	end
-	for key, value in pairs(config.win_extra_options) do
-		vim.api.nvim_set_option_value(key, value, { win = winid })
+	for scope_type, scope in pairs(config.bufopts) do
+		if scope_type == 'winlocal' then
+			for key, value in pairs(scope) do
+				vim.api.nvim_set_option_value(key, value, { win = winid })
+			end
+		elseif scope_type == 'buflocal' then
+			for key, value in pairs(scope) do
+				vim.api.nvim_set_option_value(key, value, { buf = bufnr })
+			end
+		end
 	end
 
 	state.edit_mode = false -- start always normal mode

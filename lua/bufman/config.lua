@@ -6,6 +6,7 @@ local M = {}
 ---@field formatter string[]
 ---@field extra_keys table<string, string>
 ---@field winopts table
+---@field bufopts table additional option for buffer
 ---@field sort bm.config.sort
 ---@field focus string
 
@@ -45,6 +46,17 @@ local default_config = {
 		width = 0.9,
 		height = nil,
 		borderchars = 'rounded',
+	},
+	-- if you want to change additional option of buffer manager, you can this
+	-- It will be used by vim.api.nvim_set_option_value(key, value, { win = winid } or { buf = bufnr })
+	bufopts = {
+		winlocal = {
+			number = false,
+			relativenumber = false,
+			signcolumn = 'no',
+		},
+		buflocal = {
+		},
 	},
 	-- sort buffer by bufnr|lastused|filename for navigating
 	-- if you don't want to sort, use nil
