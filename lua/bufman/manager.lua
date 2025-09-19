@@ -149,6 +149,9 @@ end
 
 -- update indicator
 local function update_indicator()
+	if state.bm_winid then
+		return
+	end
 	local curbufnr = vim.api.nvim_get_current_buf() -- focused buffer
 	local altbufnr = vim.fn.bufnr('#')
 	for _, mark in ipairs(marks) do
