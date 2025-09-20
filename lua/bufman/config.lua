@@ -4,6 +4,7 @@ local M = {}
 ---@class bm.config
 ---@field shortcut bm.config.shortcut
 ---@field formatter string[]
+---@field keys bm.config.keys
 ---@field extra_keys table<string, string>
 ---@field winopts table
 ---@field bufopts table additional option for buffer
@@ -20,12 +21,19 @@ local M = {}
 ---@field method string?
 ---@field reverse boolean
 
+---@class bm.config.keys
+---@field toggle_edit string
+---@field reorder_upper string
+---@field reorder_lower string
+---@field update_and_close string
+---@field close string
+
 ---@type bm.config
 local default_config = {
 	-- prefix shortcut to open buffer
 	-- [jkeq] will be ignored although these characters are in charlist
 	shortcut = {
-		charlist = 'qwertyuiopasdfghlzxcvbnm', -- 20 buffers are supported
+		charlist = 'qwertyuiopasdfghlzxcvbnmQWERTYUIOPASDFGHLZXCVBNM', -- 44 buffers are supported
 		use_first_letter = true, -- if true, set shortcut following first letter of file name
 								 -- If first letter is duplicated, it will be set by charlist
 	},
@@ -48,14 +56,22 @@ local default_config = {
 	-- 			   + means modified / # means alternate buffer / % means current focused buffer
 	-- shortcut : shortcut to go to buffer (required)
 	-- icon : icon by nvim-web-devicons
-	formatter = {'shortcut', 'icon', 'indicator', 'filename', 'mindir'},
+	formatter = {'shortcut', 'icon', 'indicator', 'filename', 'mindir', 'relfile_pwd'},
+	-- default keys in buffer manager operation
+	keys = {
+		toggle_edit = 'e',      -- toggle edit mode
+		reorder_upper = 'K',    -- reorder selected buffer to upper direction in buffer manager
+		reorder_lower = 'J',    -- reorder selected buffer to lower direction in buffer manager
+		update_and_close = 'q', -- apply current buffer manager state and close
+		close = '<Esc>',        -- close without applying buffer manager state
+	},
 	-- extra keys to open in mormal mode
 	-- insert 'key = command' what you want
 	-- it is same with vim.cmd(command <selected item>) if you enter 'key' in normal mode
 	extra_keys = {
-		['<C-v>'] = 'vsplit',
-		['<C-h>'] = 'split',
-		['<C-f>'] = 'only',
+		['<C-v>'] = 'vsplit', -- open selected buffer with vertical split
+		['<C-h>'] = 'split',  -- open selected buffer with horizontal split
+		['<C-f>'] = 'only',   -- open selected buffer to fullscreen
 	},
 	-- window options
 	-- these items are supported only

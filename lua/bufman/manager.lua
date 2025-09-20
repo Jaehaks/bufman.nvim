@@ -94,7 +94,14 @@ end
 local function update_shortcuts()
 	local charlist = config.shortcut.charlist -- total character list to use shortcut
 	local use_first_letter = config.shortcut.use_first_letter
-	local ignore_chars = '[jkeqhl]' -- charlist to ignore as shortcut
+	-- local ignore_chars = '[jkeqhl]' -- charlist to ignore as shortcut
+	local ignore_chars = 'jkhl' -- default moving key is ignored
+	for _, key in pairs(config.keys) do
+		if #key == 1 then
+			ignore_chars = ignore_chars .. key
+		end
+	end
+	ignore_chars = '[' .. ignore_chars .. ']'
 
 	-- Remove reserved chars from charlist
 	charlist = charlist:gsub(ignore_chars, '')
@@ -619,15 +626,15 @@ local function set_keymaps(bufnr, winid)
 	local opts = { buffer = bufnr, silent = true, nowait = true }
 
 	-- toggle key
-	vim.keymap.set('n', 'e', function() toggle_edit(bufnr, winid) end, opts)
+	vim.keymap.set('n', config.keys.toggle_edit, function() toggle_edit(bufnr, winid) end, opts)
 
 	-- sort key
-	vim.keymap.set({'n', 'v'}, 'J', function () reorder_contents(1) end, opts)
-	vim.keymap.set({'n', 'v'}, 'K', function () reorder_contents(-1) end, opts)
+	vim.keymap.set({'n', 'v'}, config.keys.reorder_upper, function () reorder_contents(1) end, opts)
+	vim.keymap.set({'n', 'v'}, config.keys.reorder_lower, function () reorder_contents(-1) end, opts)
 
 	-- Exit edit mode or close window
-	vim.keymap.set('n', 'q', function() update_and_close_win(bufnr, winid) end, opts)
-	vim.keymap.set('n', 'Esc', function() close_win(winid, true) end, opts)
+	vim.keymap.set('n', config.keys.update_and_close, function() update_and_close_win(bufnr, winid) end, opts)
+	vim.keymap.set('n', config.keys.close, function() close_win(winid, true) end, opts)
 
 	-- go to buffer using shortcut, <CR>
 	for _, mark in ipairs(marks) do
