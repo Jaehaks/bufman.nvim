@@ -369,17 +369,15 @@ local function get_hlinfo(formatter)
 			local item = {}
 			if format == 'icon' then
 				item.str = mark.icon[1]
-				item.len = vim.api.nvim_strwidth(item.str) -- #icon has different length of string
 				item.hl = mark.icon[2]
 			elseif format == 'shortcut' then
 				item.str = mark.shortcut
-				item.len = #item.str
 				item.hl = 'BufmanShortcut'
 			else
 				item.str = tostring(mark[format])
-				item.len = #item.str
 				item.hl = ''
 			end
+			item.len = vim.api.nvim_strwidth(item.str)
 			item.type = format
 			item.line = i - 1
 			table.insert(hlinfo, item)
