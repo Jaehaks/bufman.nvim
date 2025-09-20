@@ -408,14 +408,14 @@ local function get_marklist(formatter)
 	end
 
 	---@type bm.marklist.item[][]
-	local hlinfors = get_hlinfo(formatlist)
+	local hlinfos = get_hlinfo(formatlist)
 
 	-- calculate max length of items
-	local tbl_maxlen = Utils.get_contents_maxlen(hlinfors)
+	local tbl_maxlen = Utils.get_contents_maxlen(hlinfos)
 
 	-- adjust each column with white space
 	local contents = {}
-	for k, hlinfo in ipairs(hlinfors) do
+	for k, hlinfo in ipairs(hlinfos) do
 		local result = {}
 		local len_result = 0
 		for i, item in ipairs(hlinfo) do
@@ -435,7 +435,7 @@ local function get_marklist(formatter)
 		marks[k].display_line = display_line -- update mark.display_line
 	end
 
-	return contents, hlinfors
+	return contents, hlinfos
 end
 
 
