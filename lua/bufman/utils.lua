@@ -15,10 +15,14 @@ end
 ---@param sep_from string? path separator before change
 ---@param endslash boolean? add slash end of path or not
 M.sep_unify = function(path, sep_to, sep_from, endslash)
+	local drive = path:match('^([a-zA-Z]):[\\/]')
+	if drive then
+		path = drive:upper() .. path:sub(2)
+	end
 	sep_to = sep_to or (WinOS and '\\' or '/')
 	sep_from = sep_from or ((sep_to == '/') and '\\' or '/')
 	local endchar = endslash and sep_to or ''
-	return path:gsub('[/\\]+$', ''):gsub(sep_from, sep_to) .. endchar
+	return path:gsub('[/\\]+$', ''):gsub(sep_from, sep_to):gsub('%s', '\\ ') .. endchar
 end
 
 -- get number of items of table
