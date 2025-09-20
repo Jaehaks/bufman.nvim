@@ -697,6 +697,15 @@ M.bjump = function (level)
 	vim.api.nvim_set_current_buf(bufnr)
 end
 
+M.get_bufcount = function ()
+	update_marks()
+	local bufidx = Utils.get_idx_by_key(marks, 'bufnr', vim.api.nvim_get_current_buf())
+	return '#' .. tostring(bufidx) .. '(' .. tostring(#marks) .. ')'
+end
+
+M.get_marks = function ()
+	return marks
+end
 
 
 return M
