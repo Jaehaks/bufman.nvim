@@ -507,8 +507,10 @@ end
 ---@param winid number
 ---@param force_save boolean
 local function close_win(winid, force_save)
+	local bufnr = vim.api.nvim_win_get_buf(winid)
 	force_save = force_save or false
 	vim.api.nvim_win_close(winid, force_save)
+	vim.api.nvim_buf_delete(bufnr, {force = true}) -- delete buffer, BufDelete event
 end
 
 -- close buffer manager considering edit_mode
