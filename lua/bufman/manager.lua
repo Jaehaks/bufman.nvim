@@ -702,10 +702,8 @@ local function set_autocmds(bufnr, winid)
 	vim.api.nvim_create_autocmd('WinClosed', {
 		buffer = bufnr,
 		group = 'Bufman_Manager',
+		once = true,
 		callback = function ()
-			-- if bufman_bufnr then
-			-- 	vim.api.nvim_buf_delete(bufman_bufnr, { force = false })
-			-- end
 			state.bm_winid = nil
 			state.bm_bufnr = nil
 			state.edit_mode = false
