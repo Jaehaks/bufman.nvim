@@ -321,28 +321,32 @@ local function create_window(contents, hlinfos)
 	if not bufnr then
 		bufnr = vim.api.nvim_create_buf(false, false)              -- set buffer temporarily
 	end
-	local winid = vim.api.nvim_open_win(bufnr, true, winopts)        -- open window and enter
+	-- set options
 	vim.api.nvim_buf_set_name(bufnr, "bufman")
+	vim.api.nvim_set_option_value("filetype", "bufman", { buf = bufnr })
+	vim.api.nvim_set_option_value("buftype", "acwrite", { buf = bufnr })
+	vim.api.nvim_set_option_value("bufhidden", "delete", { buf = bufnr })
+	for scope_type, scope in pairs(config.bufopts) do
+		if scope_type == 'buflocal' then
+			for key, value in pairs(scope) do
+				vim.api.nvim_set_option_value(key, value, { buf = bufnr })
+			end
+		end
+	end
 
+	-- open window (BufEnter will be generated)
+	local winid = vim.api.nvim_open_win(bufnr, true, winopts)        -- open window and enter
 	-- set contents
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, contents)
 	Utils.set_highlight(bufnr, ns_id, hlinfos)
 	vim.api.nvim_win_set_cursor(winid, {focus_line,0})						 -- set cursor position
-
-	-- set options
-	vim.api.nvim_set_option_value("filetype", "bufman", { buf = bufnr })
-	vim.api.nvim_set_option_value("buftype", "acwrite", { buf = bufnr })
-	vim.api.nvim_set_option_value("bufhidden", "delete", { buf = bufnr })
 	vim.api.nvim_set_option_value('modifiable', false, { buf = bufnr })
 	vim.api.nvim_set_option_value('modified', false, { buf = bufnr })
+
 	for scope_type, scope in pairs(config.bufopts) do
 		if scope_type == 'winlocal' then
 			for key, value in pairs(scope) do
 				vim.api.nvim_set_option_value(key, value, { win = winid })
-			end
-		elseif scope_type == 'buflocal' then
-			for key, value in pairs(scope) do
-				vim.api.nvim_set_option_value(key, value, { buf = bufnr })
 			end
 		end
 	end
