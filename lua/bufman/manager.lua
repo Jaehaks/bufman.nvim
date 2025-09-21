@@ -759,7 +759,7 @@ end
 ---############################################################################---
 
 -- open/close shortcut window
-M.toggle_shortcut = function ()
+M.toggle_manager = function ()
 	if state.bm_winid then -- if it is already opened, return
 		update_and_close_win(state.bm_bufnr, state.bm_winid)
 		return

@@ -1,7 +1,7 @@
 local M = {}
 
-M.toggle_shortcut = function ()
-	require('bufman.manager').toggle_shortcut()
+M.toggle_manager = function ()
+	require('bufman.manager').toggle_manager()
 end
 
 M.bnext = function ()
