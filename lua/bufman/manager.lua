@@ -776,7 +776,7 @@ M.bjump = function (level)
 	update_marks()
 	local bufnr = vim.api.nvim_get_current_buf()
 	local idx = Utils.get_idx_by_key(marks, 'bufnr', bufnr)
-	idx = idx + level
+	idx = (config.sort.method ~= 'stack') and idx + level or idx - level
 	idx = idx > #marks and #marks or (idx < 1 and 1 or idx)
 	bufnr = marks[idx].bufnr
 	vim.api.nvim_set_current_buf(bufnr)
