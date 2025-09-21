@@ -20,4 +20,8 @@ M.get_marks = function ()
 	return require('bufman.manager').get_marks()
 end
 
+M.get_stacks = function ()
+	return require('bufman.manager').get_stacks()
+end
+
 return M

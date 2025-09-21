@@ -16,6 +16,7 @@ local ns_id = require('bufman.highlight').ns_id
 ---@field indicator string
 ---@field shortcut string
 ---@field icon bm.mark.icon
+---@field stack_idx number
 ---@field display_line string string which is displayed in buffer manager to notice this mark
 
 ---@class bm.mark.icon
@@ -24,6 +25,10 @@ local ns_id = require('bufman.highlight').ns_id
 
 ---@type bm.mark[]
 local marks = {}
+local buf_stack = {
+	list = {},
+	cur_idx = 0,
+}
 
 ---@class bm.state
 ---@field edit_mode boolean
@@ -169,6 +174,33 @@ local function update_indicator()
 	end
 end
 
+local function update_stack()
+	if state.bm_winid then
+		return
+	end
+
+	local last_idx = 0
+	for k, bufnr in ipairs(buf_stack.list) do
+		local idx = Utils.get_idx_by_key(marks, 'bufnr', bufnr)
+		if idx then
+			marks[idx].stack_idx = k
+			last_idx = k
+		end
+	end
+	if #buf_stack.list == #marks then
+		return
+	end
+
+	last_idx = last_idx + 1
+	for i = 1, #marks do
+		if not vim.tbl_contains(buf_stack.list, marks[i].bufnr) then
+			table.insert(buf_stack.list, marks[i].bufnr)
+			marks[i].stack_idx = last_idx
+			last_idx = last_idx + 1
+		end
+	end
+end
+
 -- reorder marks by method
 ---@param method string?
 ---@param reverse boolean
@@ -194,6 +226,10 @@ local function update_order(method, reverse)
 			else
 				return a_value > b_value
 			end
+		end)
+	elseif method == 'stack' then
+		table.sort(marks, function(a, b)
+			return a.stack_idx < b.stack_idx
 		end)
 	end
 	if reverse then
@@ -241,7 +277,8 @@ local function update_marks()
 				indicator    = '',
 				shortcut     = '',
 				icon         = {' ', 'Normal'},
-				display_line = ''
+				stack_idx 	 = 0,
+				display_line = '',
 			})
 		end
 	end
@@ -251,6 +288,9 @@ local function update_marks()
 	ok = ok and update_shortcuts()   -- set shortcut keymaps to navigate
 	ok = ok and update_icons()   -- set shortcut keymaps to navigate
 	update_indicator()
+	if config.sort.method == 'stack' then
+		update_stack()
+	end
 	update_order(config.sort.method, config.sort.reverse) -- sort marks by method
 	return ok
 end
@@ -672,6 +712,49 @@ local function set_autocmds(bufnr, winid)
 		end
 	})
 end
+---############################################################################---
+---## stack
+---############################################################################---
+
+local function del_unlisted(stack)
+	for i = #stack, 1, -1 do
+		if not Utils.is_valid(stack[i]) then
+			table.remove(stack, i)
+		end
+	end
+end
+
+-- add new buffer to stack or reorder opened buffer
+M.push_stack = function(bufnr)
+	-- delete unlisted buffer in stack
+	del_unlisted(buf_stack.list)
+
+	-- get next index in stack
+	local next_idx = nil
+	for i, buf in ipairs(buf_stack.list) do
+		if buf == bufnr then
+			next_idx = i
+			break
+		end
+	end
+
+	-- If it is visited buffer
+	-- 1) navigating in order => don't messy stack and follow it
+	-- 2) jumping => reconstruct stack
+	if next_idx then
+		if math.abs(next_idx - buf_stack.cur_idx) <= 1 then
+			buf_stack.cur_idx = next_idx
+			return
+		else
+			table.remove(buf_stack.list, next_idx)
+		end
+	end
+
+	-- add bufnr to top of stack (jumping or new buffer)
+    table.insert(buf_stack.list, 1, bufnr)
+    buf_stack.cur_idx = 1
+end
+
 
 ---############################################################################---
 ---## command
@@ -709,6 +792,10 @@ end
 
 M.get_marks = function ()
 	return marks
+end
+
+M.get_stacks = function ()
+	return buf_stack
 end
 
 
