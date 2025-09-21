@@ -302,7 +302,7 @@ end
 ---@return number window id of buffer manager
 local function create_window(contents, hlinfos)
 	-- get line number where you focus first
-	local focus_line
+	local focus_line = nil
 	if config.focus == 'first' then
 		focus_line = 1
 	elseif config.focus == 'current' then
@@ -310,10 +310,8 @@ local function create_window(contents, hlinfos)
 		focus_line = Utils.get_idx_by_key(marks, 'bufnr', focus_bufnr)
 	elseif config.focus == 'alternate' then
 		local focus_bufnr = vim.fn.bufnr('#')
-		focus_bufnr = focus_bufnr < 0 and vim.fn.bufnr() or focus_bufnr
+		focus_bufnr = (focus_bufnr < 0 or vim.fn.buflisted(focus_bufnr) == 0) and vim.fn.bufnr() or focus_bufnr
 		focus_line = Utils.get_idx_by_key(marks, 'bufnr', focus_bufnr)
-	else
-		focus_line = 1
 	end
 
 	-- open floating window
