@@ -22,7 +22,7 @@ M.sep_unify = function(path, sep_to, sep_from, endslash)
 	sep_to = sep_to or (WinOS and '\\' or '/')
 	sep_from = sep_from or ((sep_to == '/') and '\\' or '/')
 	local endchar = endslash and sep_to or ''
-	return path:gsub('[/\\]+$', ''):gsub(sep_from, sep_to):gsub('%s', '\\ ') .. endchar
+	return path:gsub('[/\\]+$', ''):gsub(sep_from, sep_to) .. endchar
 end
 
 -- get number of items of table
