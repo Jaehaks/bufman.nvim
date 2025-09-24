@@ -44,6 +44,17 @@ local state = {
 ---## marks management
 ---############################################################################---
 
+-- initialize fields to restart update process
+local function clear_addfield()
+	for _, mark in ipairs(marks) do
+		mark.minfile = ''
+		mark.mindir = ''
+		mark.minlevel = 0
+		mark.shortcut = ''
+		mark.display_line = ''
+	end
+end
+
 -- count duplicated filename
 ---@param duplicate string marks field which concerns duplication
 ---@param distinguish string marks field which distinguish duplicate field
@@ -99,7 +110,6 @@ end
 local function update_shortcuts()
 	local charlist = config.shortcut.charlist -- total character list to use shortcut
 	local use_first_letter = config.shortcut.use_first_letter
-	-- local ignore_chars = '[jkeqhl]' -- charlist to ignore as shortcut
 	local ignore_chars = 'jkhl' -- default moving key is ignored
 	for _, key in pairs(config.keys) do
 		if #key == 1 then
@@ -110,11 +120,6 @@ local function update_shortcuts()
 
 	-- Remove reserved chars from charlist
 	charlist = charlist:gsub(ignore_chars, '')
-
-	-- initialize shortcut
-	for _, mark in ipairs(marks) do
-		mark.shortcut = ''
-	end
 
 	-- First pass: use first letter of filename if available and alphabetic
 	if use_first_letter then
@@ -283,6 +288,7 @@ local function update_marks()
 		end
 	end
 
+	clear_addfield()
 	local ok = nil
 	ok = update_duplicated('filename', 'mindir') -- check duplicated filename, and update mindir by step
 	ok = ok and update_shortcuts()   -- set shortcut keymaps to navigate
