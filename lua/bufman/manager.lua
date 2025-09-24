@@ -539,7 +539,7 @@ end
 ---@param key string
 local function block_key(key)
 	if state.edit_mode then
-		vim.cmd('normal! ' .. key)
+		vim.api.nvim_feedkeys(key, 'n', false)
 	end
 end
 
@@ -571,7 +571,7 @@ end
 ---@param cmd string? Other command to open buffer except of opening in last window
 local function go_to_buffer(bufnr, winid, fallback_key, cmd)
 	if state.edit_mode then
-		vim.cmd('normal! ' .. fallback_key)
+		vim.api.nvim_feedkeys(fallback_key, 'n', false)
 		return
 	end
 	if bufnr == 0 then
