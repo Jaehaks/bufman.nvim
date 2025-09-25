@@ -331,7 +331,6 @@ local function set_win_opts(contents)
 
 	-- set options of floating windows style
 	local opts = {
-		title       = 'Buffers',          -- title in window border,
 		relative    = 'editor',
 		row         = row,                -- start of x(right) index from cursor
 		col         = col,                -- start of y(below) index from cursor
@@ -340,6 +339,30 @@ local function set_win_opts(contents)
 		border      = winopts.borderchars -- single round corner
 	}
 	return opts
+end
+
+-- set title dynamically by settings
+local function set_title(winid)
+	local win_title = {}
+	table.insert(win_title, {'Buffers', 'BufmanWinTitleDefault'})
+
+	-- for edit_mode
+	if state.edit_mode then
+		table.insert(win_title, {'✏️', 'BufmanWinTitleEdit'})
+	end
+
+	-- for sort method
+	if config.sort.method then
+		table.insert(win_title, {':' .. config.sort.method, 'BufmanWinTitleSort'})
+		if config.sort.reverse then
+			table.insert(win_title, {'(R)', 'BufmanWinTitleSortReverse'})
+		end
+	end
+
+	-- set title
+	vim.api.nvim_win_set_config(winid, {
+		title = win_title,
+	})
 end
 
 ---@param contents string[] contents from formatter
@@ -388,6 +411,7 @@ local function create_window(contents, hlinfos)
 	vim.api.nvim_win_set_cursor(winid, {focus_line,0})						 -- set cursor position
 	vim.api.nvim_set_option_value('modifiable', false, { buf = bufnr })
 	vim.api.nvim_set_option_value('modified', false, { buf = bufnr })
+	set_title(winid)
 
 	for scope_type, scope in pairs(config.bufopts) do
 		if scope_type == 'winlocal' then
@@ -529,6 +553,7 @@ local function update_contents(bufnr)
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, contents)
 	Utils.set_highlight(bufnr, ns_id, hlinfos)
 	vim.api.nvim_set_option_value('modifiable', modifiable, { buf = bufnr })
+	set_title(state.bm_winid) -- change title by mode
 end
 
 -- toggle edit status
