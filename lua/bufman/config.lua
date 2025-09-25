@@ -30,12 +30,12 @@ local M = {}
 
 ---@type bm.config
 local default_config = {
-	-- prefix shortcut to open buffer
-	-- [jkeq] will be ignored although these characters are in charlist
+	-- Prefix shortcut to open buffer
+	-- [jkhl] and [keys in configuration] will be ignored although these characters are in charlist
 	shortcut = {
 		charlist = 'qwertyuiopasdfghlzxcvbnmQWERTYUIOPASDFGHLZXCVBNM', -- 44 buffers are supported
 		use_first_letter = true, -- if true, set shortcut following first letter of file name
-								 -- If first letter is duplicated, it will be set by charlist
+		-- If first letters of files are duplicated, from the seconds one onwards, it will be set by order of charlist.
 	},
 	-- Format which items are shown in buffer manager.
 	-- All absolute paths are displayed with relative of '~'.
@@ -57,7 +57,7 @@ local default_config = {
 	-- shortcut : shortcut to go to buffer (required)
 	-- icon : icon by nvim-web-devicons
 	formatter = {'shortcut', 'icon', 'indicator', 'filename', 'mindir', 'relfile_pwd'},
-	-- default keys in buffer manager operation
+	-- Default keys in buffer manager operation
 	keys = {
 		toggle_edit = 'e',      -- toggle edit mode
 		reorder_upper = 'K',    -- reorder selected buffer to upper direction in buffer manager
@@ -65,9 +65,9 @@ local default_config = {
 		update_and_close = 'q', -- apply current buffer manager state and close
 		close = '<Esc>',        -- close without applying buffer manager state
 	},
-	-- extra keys to open in mormal mode
-	-- insert 'key = command' what you want
-	-- it is same with vim.cmd(command <selected item>) if you enter 'key' in normal mode
+	-- Extra keys to open in mormal mode
+	-- Insert 'key = command' what you want
+	-- It is same with vim.cmd(command <selected item>) if you enter 'key' in normal mode
 	extra_keys = {
 		['<C-v>'] = 'vsplit', -- open selected buffer with vertical split
 		['<C-h>'] = 'split',  -- open selected buffer with horizontal split
@@ -83,8 +83,10 @@ local default_config = {
 		height = nil,
 		borderchars = 'rounded',
 	},
-	-- if you want to change additional option of buffer manager, you can this
+	-- If you want to change additional option of buffer manager, you can this
 	-- It will be used by vim.api.nvim_set_option_value(key, value, { win = winid } or { buf = bufnr })
+	-- If you set vim.o.number / relativenumber already in your own option, this option will apply to the
+	-- buffer manager automatically, and the option value in `winlocal` is useless.
 	bufopts = {
 		winlocal = {
 			number = false,
@@ -94,8 +96,21 @@ local default_config = {
 		buflocal = {
 		},
 	},
-	-- sort buffer by bufnr|lastused|filename for navigating
-	-- if you don't want to sort, use nil
+	-- sort buffer by {bufnr|lastused|filename|stack} method for navigating
+	-- if you don't want to sort, use nil (manual mode)
+	-- you can reorder buffer using upper/lower key in manual mode only.
+	-- bufnr : buffer number
+	-- lastused : last visited date. using getinfo()
+	-- 		    It is useful if you go to alternate buffer only when using bnext()/bprev().
+	-- filename : file name only.
+	-- stack : visited history.
+	-- 		   It consider distance index from current buffer. if you have 5 buffers,
+	-- 		   these indexes are {1,2,3,4,5}, 1<->2 distance is 1, 1<->4 distance is 3.
+	-- 		   If you jump any buffer which has more than 2 distances from current buffer,
+	-- 		   the buffer is add to top of stack and remove original position If the buffer is in stack already.
+	-- 		   If buffer is new, It is added only.
+	-- 		   If you move any buffer which has 1 distance from current buffer using bnext()/bprev()
+	-- 		   it doesn't change stack order. and just navigated by stack order.
 	sort = {
 		method = nil,
 		reverse = false,
