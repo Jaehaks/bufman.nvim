@@ -5,7 +5,8 @@ Buffer manager of nvim that meets what I want.
 There are so many good buffer manager. This plugins was made to bringing their strengths.
 
 # Demo
-https://github.com/user-attachments/assets/934d509e-a7a9-4b6b-8ec0-9ae1dbd7a5a6
+https://github.com/user-attachments/assets/aa1b6bf2-dd4b-49f9-907d-88a0e9a62ec7
+
 
 # Features
 
