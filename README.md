@@ -130,14 +130,10 @@ require('bufman').setup({
   -- lastused : last visited date. using getinfo()
   -- 		    It is useful if you go to alternate buffer only when using bnext()/bprev().
   -- filename : file name only.
-  -- stack : visited history.
-  -- 		 It consider distance index from current buffer. if you have 5 buffers,
-  -- 		 these indexes are {1,2,3,4,5}, 1<->2 distance is 1, 1<->4 distance is 3.
-  -- 		 If you jump any buffer which has more than 2 distances from current buffer,
-  -- 		 the buffer is add to top of stack and remove original position If the buffer is in stack already.
-  -- 		 If buffer is new, It is added only.
-  -- 		 If you move any buffer which has 1 distance from current buffer using bnext()/bprev()
-  -- 		 it doesn't change stack order. and just navigated by stack order.
+  -- stack : visited history order.
+  -- 		 If you move any buffer using bnext()/bprev(), it just iterate over the buffer list without changing order.
+  --		 It you open buffer using buffer manager or others, it consider as hoping
+  --		 so the buffer will be first item of stack and others will follow in visited order.
   sort = {
     method = nil,
     reverse = false,
@@ -176,7 +172,7 @@ Toggle manager. After you executes this api, buffer_manager is opened. Again, It
 	  whenever you quit buffer manager while edit_mode or press `toggle_edit` to come back to normal mode.
 
 
-## 2) `bnext()/bprev`
+## 2) `bnext()/bprev()`
 
 ### Purpose
 
