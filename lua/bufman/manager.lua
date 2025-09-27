@@ -25,9 +25,17 @@ local ns_id = require('bufman.highlight').ns_id
 
 ---@type bm.mark[]
 local marks = {}
+
+---@class bm.stack
+---@field list number[]
+---@field visited number[]
+---@field lock_bufnr number
+---@field is_jumping boolean
 local buf_stack = {
-	list = {},
-	cur_idx = 0,
+	list = {},          -- buffer number list not affected by bjump()
+	visited = {},       -- buffer number list by visited order
+	lock_bufnr = 0,     -- buffer id saved before opening buffer manager
+	is_jumping = false, -- state that focus moved by bjump()
 }
 
 ---@class bm.state
@@ -184,6 +192,12 @@ local function update_stack()
 		return
 	end
 
+	-- If visiting using bjump(), don't messy the stack list
+	if not buf_stack.is_jumping then
+		buf_stack.list = vim.deepcopy(buf_stack.visited)
+	end
+
+	-- update stack_idx of marks in buf_stack.list
 	local last_idx = 0
 	for k, bufnr in ipairs(buf_stack.list) do
 		local idx = Utils.get_idx_by_key(marks, 'bufnr', bufnr)
@@ -196,6 +210,7 @@ local function update_stack()
 		return
 	end
 
+	-- update stack_idx of marks not in buf_stack.list
 	last_idx = last_idx + 1
 	for i = 1, #marks do
 		if not vim.tbl_contains(buf_stack.list, marks[i].bufnr) then
@@ -294,9 +309,6 @@ local function update_marks()
 	ok = ok and update_shortcuts()   -- set shortcut keymaps to navigate
 	ok = ok and update_icons()   -- set shortcut keymaps to navigate
 	update_indicator()
-	if config.sort.method == 'stack' then
-		update_stack()
-	end
 	update_order(config.sort.method, config.sort.reverse) -- sort marks by method
 	return ok
 end
@@ -382,6 +394,8 @@ local function create_window(contents, hlinfos)
 		focus_bufnr = (focus_bufnr < 0 or vim.fn.buflisted(focus_bufnr) == 0) and vim.fn.bufnr() or focus_bufnr
 		focus_line = Utils.get_idx_by_key(marks, 'bufnr', focus_bufnr)
 	end
+	-- save current focused buffer to lock_bufnr to prevent reordering stack
+	buf_stack.lock_bufnr = vim.fn.bufnr()
 
 	-- open floating window
 	local winopts = set_win_opts(contents)
@@ -745,6 +759,8 @@ end
 ---## stack
 ---############################################################################---
 
+-- delete invalid buffers in buffer stack
+---@param stack number[]
 local function del_unlisted(stack)
 	for i = #stack, 1, -1 do
 		if not Utils.is_valid(stack[i]) then
@@ -753,35 +769,56 @@ local function del_unlisted(stack)
 	end
 end
 
--- add new buffer to stack or reorder opened buffer
-M.push_stack = function(bufnr)
-	-- delete unlisted buffer in stack
-	del_unlisted(buf_stack.list)
+-- add to visited list and make unique
+---@param bufnr number
+local function add_visited(bufnr)
+	del_unlisted(buf_stack.visited) -- delete buffer which is unused
+	table.insert(buf_stack.visited, 1, bufnr)
+	buf_stack.visited = Utils.unique(buf_stack.visited)
+end
 
-	-- get next index in stack
-	local next_idx = nil
-	for i, buf in ipairs(buf_stack.list) do
-		if buf == bufnr then
-			next_idx = i
-			break
-		end
+-- add new buffer to stack or reorder opened buffer
+---@param bufnr number buffer number to add stack
+M.push_stack = function(bufnr)
+	-- delete unlisted buffer in stack (when buffer is deleted)
+	del_unlisted(buf_stack.list)
+	-- check the buffer is valid listed buffer
+	if not Utils.is_valid(bufnr) then
+		return
+	end
+	-- check the buffer is lock buffer which is last focused before other floating buffer open.
+	if bufnr == buf_stack.lock_bufnr then
+		buf_stack.lock_bufnr = 0
+		return
 	end
 
-	-- If it is visited buffer
-	-- 1) navigating in order => don't messy stack and follow it
-	-- 2) jumping => reconstruct stack
-	if next_idx then
-		if math.abs(next_idx - buf_stack.cur_idx) <= 1 then
-			buf_stack.cur_idx = next_idx
+	-- get buf_idx if there are same buf in stack already
+	local buf_idx = Utils.get_idx_by_value(buf_stack.list, bufnr)
+	if buf_idx then
+		if buf_stack.is_jumping then -- if this buffer is focused by bjump()
+			add_visited(bufnr)
+			buf_stack.is_jumping = false
 			return
-		else
-			table.remove(buf_stack.list, next_idx)
+		else -- if this buffer is focused by other method (real jumping)
+			table.remove(buf_stack.list, buf_idx)
 		end
 	end
 
 	-- add bufnr to top of stack (jumping or new buffer)
-    table.insert(buf_stack.list, 1, bufnr)
-    buf_stack.cur_idx = 1
+	table.insert(buf_stack.list, 1, bufnr)
+	add_visited(bufnr)
+
+	-- update stack order
+	-- When opening the buffer manager, update_marks() is executed, so if update_stack() is executed at this time,
+	-- prevent the situation that the currently focused buffer is changed to first stack
+	-- even though the manager is closed without anything action.
+	-- So update_stack() is separated with update_marks() and it is executed
+	-- when adding a new buffer or opening a buffer in the any explorer.
+	if not buf_idx then
+		update_marks()
+	end
+	update_stack()
+	update_order(config.sort.method, config.sort.reverse)
 end
 
 
@@ -804,6 +841,7 @@ M.toggle_manager = function ()
 end
 
 M.bjump = function (level)
+	buf_stack.is_jumping = true -- it needs to prepend of update_marks() to notice it is bjump state
 	update_marks()
 	local bufnr = vim.api.nvim_get_current_buf()
 	local idx = Utils.get_idx_by_key(marks, 'bufnr', bufnr)

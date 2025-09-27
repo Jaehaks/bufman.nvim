@@ -167,6 +167,22 @@ M.get_idx_by_value = function(T, value)
 	return nil
 end
 
+-- remain unique value in array.
+-- the smallest index is survived.
+---@param T number[]
+---@return number[]
+M.unique = function(T)
+	local result = {}
+	local seen = {}
+	for _, val in ipairs(T) do
+		if seen[val] == nil then
+			table.insert(result, val)
+			seen[val] = true
+		end
+	end
+	return result
+end
+
 
 -- get max length of each items in contents
 ---@param T bm.marklist.item[][]
