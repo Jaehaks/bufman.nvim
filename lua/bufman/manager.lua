@@ -167,7 +167,8 @@ local function update_icons()
 	end
 
 	for _, mark in ipairs(marks) do
-		mark.icon = {devicons.get_icon(mark.filename)}
+		local ext = vim.fn.fnamemodify(mark.filename, ':e')
+		mark.icon = {devicons.get_icon(mark.filename, ext, {default = true})}
 	end
 	return true
 end
