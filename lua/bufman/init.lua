@@ -15,6 +15,12 @@ M.setup = function(opts)
 	require("bufman.config").set(opts)
 	local config = require('bufman.config').get()
 	if config.sort.method == 'stack' then
+		-- push current file to stack at init
+		local cur_bufnr = vim.api.nvim_get_current_buf()
+		if require('bufman.utils').is_valid(cur_bufnr) then
+			require('bufman.manager').push_stack(cur_bufnr)
+		end
+		-- set autocmd to push visited buffers in stack
 		set_autocmd()
 	end
 end

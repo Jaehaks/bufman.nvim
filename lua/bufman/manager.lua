@@ -298,7 +298,7 @@ local function update_marks()
 				indicator    = '',
 				shortcut     = '',
 				icon         = {' ', 'Normal'},
-				stack_idx 	 = 0,
+				stack_idx 	 = #marks+1,
 				display_line = '',
 			})
 		end
