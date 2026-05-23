@@ -145,7 +145,7 @@ local function update_shortcuts()
 	-- Second pass: assign remaining characters
 	for _, mark in ipairs(marks) do
 		if charlist == '' then
-			vim.notify('BufferManager : update shortcut error', vim.log.levels.ERROR)
+			vim.notify('[bufman.nvim] : update shortcut error', vim.log.levels.ERROR)
 			return false
 		end
 		if mark.shortcut == '' then
@@ -831,6 +831,10 @@ end
 M.toggle_manager = function ()
 	if state.bm_winid then -- if it is already opened, return
 		update_and_close_win(state.bm_bufnr, state.bm_winid)
+		return
+	end
+	if not Utils.is_valid(vim.api.nvim_get_current_buf()) then
+		vim.notify('[bufman.nvim] : Opening buffer manager is possible in normal buffer only', vim.log.levels.ERROR)
 		return
 	end
 	local ok = update_marks()

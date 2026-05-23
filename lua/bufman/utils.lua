@@ -39,14 +39,12 @@ end
 ---@param bufnr number buffer id
 ---@return string? filename of bufnr
 M.is_valid = function(bufnr)
-	local buflisted = vim.fn.buflisted(bufnr) == 1
-	if buflisted then
-		local filepath = vim.api.nvim_buf_get_name(bufnr)
-		if filepath ~= '' then
-			return filepath
-		end
+	if not vim.api.nvim_buf_is_valid(bufnr) or -- check the buffer is wiped
+	   vim.fn.buflisted(bufnr) ~= 1 then -- check the buffer is listed in :ls (normal buffer)
+		return nil
 	end
-	return nil
+	local filepath = vim.api.nvim_buf_get_name(bufnr)
+	return filepath ~= '' and filepath or nil
 end
 
 -- return bufnr which is matched with buffer name
