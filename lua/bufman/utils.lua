@@ -40,7 +40,8 @@ end
 ---@return string? filename of bufnr
 M.is_valid = function(bufnr)
 	if not vim.api.nvim_buf_is_valid(bufnr) or -- check the buffer is wiped
-	   vim.fn.buflisted(bufnr) ~= 1 then -- check the buffer is listed in :ls (normal buffer)
+	   vim.fn.buflisted(bufnr) ~= 1 or         -- check the buffer is listed in :ls (normal buffer)
+	   vim.bo[bufnr].buftype ~= '' then        -- check the buftype is normal buffer
 		return nil
 	end
 	local filepath = vim.api.nvim_buf_get_name(bufnr)
